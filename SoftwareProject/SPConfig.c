@@ -60,7 +60,7 @@ char* trimSpaces(char* str) {
 	while (*str == ' ' || *str == '\t') {
 		str++;
 	}
-	//count spcese in the end of the va
+	//count spcaces in the end of the va
 	while (*strEnd == ' ' || *str == '\t') {
 		strEnd--;
 		}
@@ -71,6 +71,44 @@ char* trimSpaces(char* str) {
 	return str;
 }
 
+/*
+ * returns true if the string contains no spaces
+ */
+bool checkStrConstraint(char* str) {
+
+	while (*str != '\n') {
+		if (*str == ' ' || *str == '\t') {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
+
+	if (!checkStrConstraint(name) || !checkStrConstraint(value)){
+		return SP_CONFIG_INVALID_STRING;
+	}
+
+	if (strcmp(name, "spImagesDirectory") == 0) {
+		strcpy(config->spImagesDirectory, value);
+	}
+
+	if (strcmp(name, "spImagesPrefix") == 0) {
+		strcpy(config->spImagesPrefix, value);
+	}
+
+	if (strcmp(name, "spImagesSuffix") == 0) {
+		if (strcmp(value, ".jpg") != 0 && strcmp(value, ".png") !=0 && strcmp(value, ".bmp") != 0  && strcmp(value, ".gif") != 0 ) {
+			return SP_CONFIG_MISSING_SUFFIX;
+		}
+		strcpy(config->spImagesSuffix, value);
+	}
+
+
+	return SP_CONFIG_SUCCESS;
+}
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 	FILE* fp;
@@ -98,12 +136,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 		return NULL;
 	}
 
-
-	if (fp == NULL) {
-		//TODO - handle error
-		return 0;
-	}
-
 	while(fgets(line, sizeof(line), fp) != NULL){
 		if (!isComment(line) && !(containsEqual(line))) {
 				*msg = SP_CONFIG_INVALID_STRING;
@@ -112,8 +144,8 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 			splitLine(line, name, val);
 			namePtr = trimSpaces(name);
 			valPtr = trimSpaces(val);
-			printf("name: %s]]]", namePtr);
-			printf("value: %s]]]\n", valPtr);
+			//printf("name: %s]]]", namePtr);
+			//printf("value: %s]]]\n", valPtr);
 			}
 
 	fclose(fp);
