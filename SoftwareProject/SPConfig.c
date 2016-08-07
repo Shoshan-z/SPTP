@@ -84,8 +84,68 @@ bool checkStrConstraint(char* str) {
 	return true;
 }
 
+/*
+ * returns "false" if the string doesn't represent a positive integer
+ */
+bool isInt(char* str){
+	if (*str == '+') {
+		str++;
+	}
 
+	while (*str != '\0') {
+		if (*str<0 || *str>9) {
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
+ * returns "false" if the string is not "true" or "false"
+ * the boolen value itself will be in *b
+ */
+bool isBool(char* str, bool* b){
+	char copy[6] = {0};
+
+	while (*str != '\0') {
+		*copy = tolower(*str);
+		str++;
+		copy++;
+	}
+
+	if (strcmp(copy, "true") == 0) {
+		*b = true;
+		return true;
+	}
+	if (strcmp(copy, false) == 0) {
+		*b = false;
+		return true;
+	}
+	return false;
+
+}
+
+/**
+ * changes a string to be all upper case
+ */
+void strToUpperCase(char* str) {
+	while (*str != '\0') {
+		*str = toupper(*str);
+		str++;
+	}
+}
+
+
+/*
+ * the functions takes each line and fill in the correspondent value in the configuration struct
+ * return: SP_CONFIG_SUCCESS in case of success,
+ * 		   SP_CONFIG_INVALID_STRING
+ * 		   SP_CONFIG_INVALID_INTEGER
+ * 		   SP_CONFIG_MISSING_SUFFIX
+ */
 SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
+	int tmpNum = 0;
+	bool tmpBool = false;
 
 	if (!checkStrConstraint(name) || !checkStrConstraint(value)){
 		return SP_CONFIG_INVALID_STRING;
@@ -106,8 +166,91 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		strcpy(config->spImagesSuffix, value);
 	}
 
+	if (strcmp(name, "spNumOfImages") == 0) {
+		if (!isInt(value)) {
+			return SP_CONFIG_INVALID_INTEGER;
+		}
+		tmpNum = atoi(value);
+		config->spNumOfImages = tmpNum;
+		}
 
-	return SP_CONFIG_SUCCESS;
+	if (strcmp(name, "spPCADimension") == 0) {
+			if (!isInt(value)) {
+				return SP_CONFIG_INVALID_INTEGER;
+			}
+			tmpNum = atoi(value);
+			if (tmpNum<10 || tmpNum>128) {
+				return SP_CONFIG_INVALID_INTEGER;
+			}
+		config->spPCADimension = tmpNum;
+			}
+	if (strcmp(name, "spExtractionMode") == 0) {
+		if (!isBool(value, &tmpBool)) {
+			return SP_CONFIG_INVALID_STRING;
+		}
+		config->spExtractionMode = tmpBool;
+		}
+	if (strcmp(name, "spNumOfSimilarImages") == 0) {
+			if (!isInt(value)) {
+				return SP_CONFIG_INVALID_INTEGER;
+			}
+			tmpNum = atoi(value);
+			if (tmpNum==0) {
+				return SP_CONFIG_INVALID_INTEGER;
+			}
+		config->spNumOfSimilarImages = tmpNum;
+			}
+
+	if (strcmp(name, "spKDTreeSplitMethod") == 0) {
+		strToUpperCase(value);
+		if(strcmp(value, "RANDOM") == 0) {
+			config->spKDTreeSplitMethod = RANDOM;
+			}
+		else if(strcmp(value, "MAX_SPREAD") == 0) {
+			config->spKDTreeSplitMethod = MAX_SPREAD;
+			}
+		else if(strcmp(value, "INCREMENTAL") == 0) {
+			config->spKDTreeSplitMethod = INCREMENTAL;
+			}
+		else
+			{
+			return SP_CONFIG_INVALID_STRING;
+				}
+			}
+		if (strcmp(name, "spKNN") == 0) {
+				if (!isInt(value)) {
+					return SP_CONFIG_INVALID_INTEGER;
+				}
+				tmpNum = atoi(value);
+				if (tmpNum==0) {
+					return SP_CONFIG_INVALID_INTEGER;
+				}
+			config->spKNN = tmpNum;
+				}
+		if (strcmp(name, "spMinimalGUI") == 0) {
+				if (!isBool(value, &tmpBool)) {
+					return SP_CONFIG_INVALID_STRING;
+				}
+			config->spMinimalGUI = tmpBool;
+			}
+
+		if (strcmp(name, "spLoggerLevel") == 0) {
+				if (!isInt(value)) {
+					return SP_CONFIG_INVALID_INTEGER;
+				}
+				tmpNum = atoi(value);
+				if (tmpNum<1 || tmpNum>4) {
+					return SP_CONFIG_INVALID_INTEGER;
+				}
+			config->spLoggerLevel = tmpNum;
+			}
+
+		if (strcmp(name, "spLoggerFilename") == 0) {
+			strcpy(config->spLoggerFilename, value);
+			}
+
+
+		return SP_CONFIG_SUCCESS;
 }
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
