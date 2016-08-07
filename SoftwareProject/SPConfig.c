@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "SPConfig.h"
 
 bool isComment(char* str) {
@@ -76,10 +77,11 @@ char* trimSpaces(char* str) {
  */
 bool checkStrConstraint(char* str) {
 
-	while (*str != '\n') {
+	while (*str != '\0') {
 		if (*str == ' ' || *str == '\t') {
 			return false;
 		}
+		str++;
 	}
 	return true;
 }
@@ -93,9 +95,10 @@ bool isInt(char* str){
 	}
 
 	while (*str != '\0') {
-		if (*str<0 || *str>9) {
+		if (*str<'0' || *str>'9') {
 			return false;
 		}
+		str++;
 	}
 	return true;
 }
@@ -106,18 +109,19 @@ bool isInt(char* str){
  */
 bool isBool(char* str, bool* b){
 	char copy[6] = {0};
+	int i =0;
 
 	while (*str != '\0') {
-		*copy = tolower(*str);
+		copy[i] = tolower(*str);
 		str++;
-		copy++;
+		i++;
 	}
 
 	if (strcmp(copy, "true") == 0) {
 		*b = true;
 		return true;
 	}
-	if (strcmp(copy, false) == 0) {
+	if (strcmp(copy, "false") == 0) {
 		*b = false;
 		return true;
 	}
@@ -183,7 +187,21 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 				return SP_CONFIG_INVALID_INTEGER;
 			}
 		config->spPCADimension = tmpNum;
+		}
+
+	if (strcmp(name, "spPCAFilename") == 0){
+		strcpy(config->spPCAFilename, value);
+		}
+	if (strcmp(name, "spNumOfFeatures") == 0) {
+		if (!isInt(value)) {
+			return SP_CONFIG_INVALID_INTEGER;
 			}
+			tmpNum = atoi(value);
+			if (tmpNum==0) {
+				return SP_CONFIG_INVALID_INTEGER;
+				}
+			config->spNumOfFeatures = tmpNum;
+		}
 	if (strcmp(name, "spExtractionMode") == 0) {
 		if (!isBool(value, &tmpBool)) {
 			return SP_CONFIG_INVALID_STRING;
@@ -253,47 +271,105 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		return SP_CONFIG_SUCCESS;
 }
 
+/*
+ * the function returns a pointer to a configuration struct with empty fields
+ */
+SPConfig createEmptyConfig(){
+	SPConfig config = NULL;
+	config = (SPConfig) calloc (sizeof(struct sp_config_t), 1);
+		if (config == NULL) {
+			return NULL;
+		}
+	 config->spNumOfImages = -1;
+	 config->spPCADimension = -1;
+	 config->spNumOfFeatures = -1;
+	 config->spExtractionMode = false;
+	 config->spNumOfSimilarImages = -1;
+	 config->spKDTreeSplitMethod = NONE;
+	 config->spKNN = -1;
+	 config->spMinimalGUI = false;
+	 config->spLoggerLevel = -1;
+
+	return config;
+}
+
+/*
+ *
+ *
+ */
+void printError(const char* filename, int line, SP_CONFIG_MSG msg ){
+	char* message = NULL;
+	if (msg == SP_CONFIG_INVALID_LINE) {
+		message = "Invalid configuration line";
+	}
+	if (msg == SP_CONFIG_INVALID_STRING || msg == SP_CONFIG_INVALID_INTEGER || msg == SP_CONFIG_MISSING_SUFFIX) {
+		message = "Invalid value - constraint not met";
+	}
+
+	printf("File: %s\n",filename);
+	printf("Line: %d\n", line);
+	printf("Message: %s\n", message);
+}
+
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
-	FILE* fp;
-	char line[1024]; //1025? the zero terminating the string
+	FILE* fp = NULL;
+	char line[1024] = {0}; //1025? the zero terminating the string
 	char name[1024] = {0};
 	char val[1024] = {0};
 	char* namePtr = NULL;
 	char* valPtr = NULL;
 	SPConfig config = NULL;
+	int lineNum = 1;
 
 	if (filename == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
-		return NULL;
+		goto cleanup;
 	}
 
 	fp = fopen("config.txt", "r");
 	if (fp == NULL) {
 		*msg = SP_CONFIG_CANNOT_OPEN_FILE;
-		return NULL;
+		goto cleanup;
 	}
 
-	config = (SPConfig) malloc (sizeof(struct sp_config_t));
+	config = createEmptyConfig();
 	if (config == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		return NULL;
 	}
 
+
+
 	while(fgets(line, sizeof(line), fp) != NULL){
-		if (!isComment(line) && !(containsEqual(line))) {
-				*msg = SP_CONFIG_INVALID_STRING;
-				return NULL;
+		lineNum++;
+		if (isComment(line)) {
+				continue;
 			}
-			splitLine(line, name, val);
-			namePtr = trimSpaces(name);
-			valPtr = trimSpaces(val);
-			//printf("name: %s]]]", namePtr);
-			//printf("value: %s]]]\n", valPtr);
+		if (!(containsEqual(line))) {
+			*msg = SP_CONFIG_INVALID_LINE;
+			goto cleanup;
 			}
 
-	fclose(fp);
+		splitLine(line, name, val);
+		namePtr = trimSpaces(name);
+		valPtr = trimSpaces(val);
+		*msg =  matchValue(config, namePtr, valPtr);
+		if (*msg != SP_CONFIG_SUCCESS) {
+			goto cleanup;
+			}
+		}
 
-	return NULL;
+cleanup:
+	if (*msg != SP_CONFIG_SUCCESS) {
+		printError(filename, lineNum, *msg);
+		if (config != NULL) {
+			free(config);
+		}
+	}
+	if (fp != NULL) {
+		fclose(fp);
+	}
+	return config;
 }
 
 bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg) {

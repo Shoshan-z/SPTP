@@ -1,0 +1,16 @@
+#this is a comment 
+          #this is also a comment
+spImagesDirectory = ./images
+spImagesPrefix = img
+spImagesSuffix =      .pn   g
+spNumOfImages = 10
+spPCADimension = 20
+spPCAFilename = pca.yml
+spNumOfFeatures = 100
+spExtractionMode=false
+spNumOfSimilarImages=5
+spKDTreeSplitMethod=INCREMENTAL
+spKNN=2
+spMinimalGUI=false
+spLoggerLevel=2
+spLoggerFilename=TodaySucks
