@@ -1,8 +1,9 @@
 #this is a comment 
           #this is also a comment
-spImagesDirectory = ./images
+spImagesDirectory =
+#./images
 spImagesPrefix = img
-spImagesSuffix =      .pn   g
+spImagesSuffix =      .png
 spNumOfImages = 10
 spPCADimension = 20
 spPCAFilename = pca.yml

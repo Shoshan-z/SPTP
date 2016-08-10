@@ -5,12 +5,10 @@
 #include "SPConfig.h"
 
 bool isComment(char* str) {
-
 	if (str == NULL) {
 		//TODO error of some sort
 		return true;
 	}
-
 	while ((*str == ' ' || *str == '\t') && *str != '\0') { //find the first char which isn't a space or a tab
 		str++;
 	}
@@ -40,19 +38,33 @@ void splitLine(char* line, char* name, char* val) {
 	char lineCopy[1025];
 	char* tmpName = NULL;
 	char* tmpVal = NULL;
+	int len = 0; //will contain the line length
 
-	strcpy(lineCopy, line); //since strcpy changes it's input string
-	tmpName = strtok(lineCopy, "=");
-	strcpy(name, tmpName);
-	tmpVal = strtok(NULL, "\n");
-	strcpy(val, tmpVal);
-
+	len = strlen(line);
+	if (line[len-1] == '=') { //the line ends with "="
+		line[len-1] = '\0';
+		strcpy(name, line);
+		val = NULL;
+	}
+	else {
+		strcpy(lineCopy, line); //since strcpy changes it's input string
+		tmpName = strtok(lineCopy, "=");
+		strcpy(name, tmpName);
+		tmpVal = strtok(NULL, "\n");
+		strcpy(val, tmpVal);
+	}
 	return;
 }
-
+/*
+ * returns a pointer to the string with no spaces in the start and end
+ */
 char* trimSpaces(char* str) {
 	int len = 0;
 	char* strEnd = NULL;
+
+	if (str == NULL || str[0] == '\0') {
+		return NULL;
+	}
 
 	len = strlen(str);
 	strEnd = str + len-1; //a pointer to the last char in the string
@@ -156,6 +168,9 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 	}
 
 	if (strcmp(name, "spImagesDirectory") == 0) {
+		if (value == NULL) {
+			return SP_CONFIG_MISSING_DIR;
+		}
 		strcpy(config->spImagesDirectory, value);
 	}
 
@@ -297,13 +312,29 @@ SPConfig createEmptyConfig(){
  *
  *
  */
-void printError(const char* filename, int line, SP_CONFIG_MSG msg ){
+void printError(const char* filename, int line, SP_CONFIG_MSG msg){
 	char* message = NULL;
+	char* param = NULL;
 	if (msg == SP_CONFIG_INVALID_LINE) {
 		message = "Invalid configuration line";
 	}
 	if (msg == SP_CONFIG_INVALID_STRING || msg == SP_CONFIG_INVALID_INTEGER || msg == SP_CONFIG_MISSING_SUFFIX) {
 		message = "Invalid value - constraint not met";
+	}
+	else {
+		if (msg == SP_CONFIG_MISSING_DIR) {
+		param = "spImagesDirectory";
+		}
+		if (msg == SP_CONFIG_MISSING_PREFIX) {
+		param = "spImagesPrefix";
+		}
+		if (msg == SP_CONFIG_MISSING_SUFFIX) {
+		param = "spImagesSuffix";
+		}
+		if (msg == SP_CONFIG_MISSING_NUM_IMAGES) {
+		param = "spNumOfImages";
+		}
+		sprintf(message, "Parameter %s is not set", param);
 	}
 
 	printf("File: %s\n",filename);
@@ -319,7 +350,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 	char* namePtr = NULL;
 	char* valPtr = NULL;
 	SPConfig config = NULL;
-	int lineNum = 1;
+	int lineNum = 0;
 
 	if (filename == NULL) {
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
@@ -337,8 +368,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		return NULL;
 	}
-
-
 
 	while(fgets(line, sizeof(line), fp) != NULL){
 		lineNum++;
@@ -358,6 +387,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 			goto cleanup;
 			}
 		}
+
 
 cleanup:
 	if (*msg != SP_CONFIG_SUCCESS) {
