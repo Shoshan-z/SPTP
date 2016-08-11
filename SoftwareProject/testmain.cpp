@@ -28,9 +28,13 @@ int main() {
 		//config->spMinimalGUI = false;
 		printf("%d\n",config->spLoggerLevel);
 		printf("%s\n", config->spLoggerFilename);
+
 	}
 
+		char path[1024] = {0};
+		spConfigGetImagePath(path, config, 3 );
 
+		printf(path);
 	//printf("AAAAAAAA\n");
 
 

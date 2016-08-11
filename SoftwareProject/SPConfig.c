@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "SPConfig.h"
+#include <assert.h>
 
 bool isEmpty(char* str) {
 	if (str == NULL) {
@@ -464,40 +465,107 @@ cleanup:
 	}
 	return config;
 }
-
-bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg) {
-
-	return false;
+//----------------LILACH---------------------------//
+bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg){
+	assert(msg!= NULL);
+	if (!config){
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
+	}else{ // TODO config != NULL means success here?
+		*msg = SP_CONFIG_SUCCESS;
+	}
+	if (config->spExtractionMode == NULL){//default value
+		return true;
+	}
+	return config->spExtractionMode;
 }
 
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg){
-
-	return false;
+	assert(msg!= NULL);
+	if (!config){
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
+	}else{
+		*msg = SP_CONFIG_SUCCESS;
+	}
+	if (config->spMinimalGUI == NULL){ //default value
+			return false;
+		}
+	return config->spMinimalGUI;
 }
 
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg){
-	return 0;
-}
+	assert(msg!= NULL);
+	if (!config){
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		return -1; 	// returns a negative number if not succeed
+		}
+	*msg = SP_CONFIG_SUCCESS;
+	return config->spNumOfImages;
+	}
 
 int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg){
-
-	return 0;
+	assert(msg!= NULL);
+	if (!config){
+		*msg = SP_CONFIG_INVALID_ARGUMENT;
+		return -1; // returns a negative number if not succeed
+	}else{
+		*msg = SP_CONFIG_SUCCESS;
+	}
+	if (config->spNumOfFeatures == -1){ // means no value was entered
+		return 100; //default value
+	}
+	return config->spNumOfFeatures;// check it is fixed after integrate with shoshan
 }
 
 int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg){
-
-	return 0;
+	assert(msg!= NULL);
+		if (!config){
+			*msg = SP_CONFIG_INVALID_ARGUMENT;
+			return -1; // returns a negative number if not succeed
+		}else{
+			*msg = SP_CONFIG_SUCCESS;
+		}
+		if (config->spPCADimension == -1){
+			return 20; //default value
+		}
+	return config->spPCADimension;
 }
 
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int index){
+	//imagePath = malloc(1024 * sizeof(char)); // TODO should do it like that-alocate the space here? ( shoshan)/ remember to free!
+	char indexStr[1024] = {0};
+	if (!config || !imagePath){
+			return SP_CONFIG_INVALID_ARGUMENT;
+		}
+	if (index >= config->spNumOfImages){
+			return SP_CONFIG_INDEX_OUT_OF_RANGE;
+		}
+
+	strcat(imagePath, config->spImagesDirectory);
+	strcat(imagePath, "/");
+	strcat(imagePath, config->spImagesPrefix);
+	snprintf(indexStr, 1024, "%s",index);
+	strcat(imagePath, indexStr);
+	strcat(imagePath, config->spImagesSuffix);
 
 	return SP_CONFIG_SUCCESS;
 }
+
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
+	//pcaPath = malloc(1024 * sizeof(char)); TODO// should do it like that-alocate the space here? ( shoshan)/ remember to free!
+	if (!config || !pcaPath){
+		return SP_CONFIG_INVALID_ARGUMENT;
+	}
+	strcat(pcaPath, config->spImagesDirectory);
+	strcat(pcaPath, config->spPCAFilename);
 
 	return SP_CONFIG_SUCCESS;
 }
+
+//-------------------------------------------------//
+
+
+
 
 void spConfigDestroy(SPConfig config){
 	if (config == NULL) {
@@ -505,4 +573,5 @@ void spConfigDestroy(SPConfig config){
 	}
 	free(config);
 }
+
 
