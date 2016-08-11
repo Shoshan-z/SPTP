@@ -38,7 +38,11 @@ int main() {
 		char PCApath[1024] = {0};
 		spConfigGetPCAPath(PCApath, config );
 		printf("%s\n", path);
-		printf(PCApath);
+		printf("%s\n",PCApath);
+		SP_CONFIG_MSG misg ;
+		int t_f;
+		t_f=spConfigMinimalGui(config,&misg);
+		printf("%d\n", t_f);
 	//printf("AAAAAAAA\n");
 
 

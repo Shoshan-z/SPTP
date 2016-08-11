@@ -11,6 +11,6 @@ spExtractionMode=false
 spNumOfSimilarImages=5
 spKDTreeSplitMethod=INCREMENTAL
 spKNN = 21
-spMinimalGUI   =false
+spMinimalGUI   =true
 spLoggerLevel= 3
 spLoggerFilename= TodaySucks

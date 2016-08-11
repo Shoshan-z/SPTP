@@ -338,11 +338,11 @@ SPConfig createEmptyConfig(){
 	 config->spNumOfImages = -1;
 	 config->spPCADimension = -1;
 	 config->spNumOfFeatures = -1;
-	 config->spExtractionMode = NULL;
+	 config->spExtractionMode = true;
 	 config->spNumOfSimilarImages = -1;
 	 config->spKDTreeSplitMethod = NONE;
 	 config->spKNN = -1;
-	 config->spMinimalGUI = NULL;
+	 config->spMinimalGUI = false;
 	 config->spLoggerLevel = -1;
 
 	return config;
@@ -465,7 +465,7 @@ cleanup:
 	}
 	return config;
 }
-//----------------LILACH---------------------------//
+
 bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg){
 	assert(msg!= NULL);
 	if (!config){
@@ -473,9 +473,7 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg){
 	}else{ // TODO config != NULL means success here?
 		*msg = SP_CONFIG_SUCCESS;
 	}
-	if (config->spExtractionMode == NULL){//default value
-		return true;
-	}
+
 	return config->spExtractionMode;
 }
 
@@ -486,9 +484,7 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg){
 	}else{
 		*msg = SP_CONFIG_SUCCESS;
 	}
-	if (config->spMinimalGUI == NULL){ //default value
-			return false;
-		}
+
 	return config->spMinimalGUI;
 }
 
@@ -563,7 +559,7 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
 	return SP_CONFIG_SUCCESS;
 }
 
-//-------------------------------------------------//
+
 
 
 
