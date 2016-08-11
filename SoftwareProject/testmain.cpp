@@ -34,7 +34,11 @@ int main() {
 		char path[1024] = {0};
 		spConfigGetImagePath(path, config, 3 );
 
-		printf(path);
+
+		char PCApath[1024] = {0};
+		spConfigGetPCAPath(PCApath, config );
+		printf("%s\n", path);
+		printf(PCApath);
 	//printf("AAAAAAAA\n");
 
 

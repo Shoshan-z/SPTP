@@ -543,7 +543,7 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int i
 	strcat(imagePath, config->spImagesDirectory);
 	strcat(imagePath, "/");
 	strcat(imagePath, config->spImagesPrefix);
-	snprintf(indexStr, 1024, "%s",index);
+	snprintf(indexStr, 1024,"%d",index);
 	strcat(imagePath, indexStr);
 	strcat(imagePath, config->spImagesSuffix);
 
@@ -557,6 +557,7 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
 	strcat(pcaPath, config->spImagesDirectory);
+	strcat(pcaPath , "/");
 	strcat(pcaPath, config->spPCAFilename);
 
 	return SP_CONFIG_SUCCESS;
