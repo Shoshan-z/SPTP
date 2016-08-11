@@ -338,11 +338,11 @@ SPConfig createEmptyConfig(){
 	 config->spNumOfImages = -1;
 	 config->spPCADimension = -1;
 	 config->spNumOfFeatures = -1;
-	 config->spExtractionMode = false;
+	 config->spExtractionMode = NULL;
 	 config->spNumOfSimilarImages = -1;
 	 config->spKDTreeSplitMethod = NONE;
 	 config->spKNN = -1;
-	 config->spMinimalGUI = false;
+	 config->spMinimalGUI = NULL;
 	 config->spLoggerLevel = -1;
 
 	return config;
