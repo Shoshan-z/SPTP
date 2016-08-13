@@ -3,6 +3,8 @@ extern "C" {
 	#include "SPConfig.h"
 }
 
+#include "SPKDArray.h"
+
 
 int main() {
 	SPConfig config = NULL;
@@ -39,6 +41,7 @@ int main() {
 		spConfigGetPCAPath(PCApath, config );
 		printf("%s\n", path);
 		printf("%s\n",PCApath);
+
 		SP_CONFIG_MSG misg ;
 		int t_f;
 		t_f=spConfigMinimalGui(config,&misg);

@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "SPConfig.h"
 #include <assert.h>
+#include "SPPoint.h"
 
 bool isEmpty(char* str) {
 	if (str == NULL) {
