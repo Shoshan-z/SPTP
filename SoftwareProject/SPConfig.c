@@ -422,7 +422,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 		goto cleanup;
 	}
 
-	fp = fopen("config.txt", "r");
+	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		*msg = SP_CONFIG_CANNOT_OPEN_FILE;
 		goto cleanup;
