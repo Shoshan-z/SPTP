@@ -13,7 +13,10 @@
 #include "SPPoint.h"
 #ifndef SPKDARRAY_H_
 #define SPKDARRAY_H_
-
+struct sp_pointAndIndex {
+	SPPoint point;
+	int index;
+};
 typedef struct sp_pointAndIndex* SPPointInd;
 
 typedef SPPointInd** SPKDArray;
@@ -25,7 +28,7 @@ extern int coor;
  */
 SPKDArray init(SPPoint* arr, int size);
 int compare (const void * a, const void * b);
-void split(SPKDArray kdArr, int coor, SPPointInd** leftArrP, SPPointInd** rightArrP, int size);//, SPPoint* pointArray);
+void split(SPKDArray kdArr, int coor, SPKDArray* leftArrP, SPKDArray* rightArrP, int size);//, SPPoint* pointArray);
 SPPointInd spPointIndCreate(SPPoint point,int index);
 SPPointInd spPointIndCopy(SPPointInd source);
 void chooseCoordinate(int coordinate); //TODO check if we want to use it

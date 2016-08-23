@@ -7,10 +7,7 @@
 #include <assert.h>
 #include "SPPoint.h"
 #include <math.h> //TODO SHOSHAN - we can use this, right?
-struct sp_pointAndIndex {
-	SPPoint point;
-	int index;
-};
+
 
 typedef SPPointInd** SPKDArray;
 int coord =0;
@@ -131,15 +128,15 @@ void split(SPKDArray kdArr, int coor, SPKDArray* leftKDArr, SPKDArray* rightKDAr
 	SPPointInd* leftArr = NULL;
 	SPPointInd* rightArr = NULL;
 	//SPPointInd* cpyArrayInds = NULL;
-	SPPointInd* leftArr = (SPPointInd*)malloc(sizeof(SPPointInd)*middle);
-	SPPointInd* rightArr = (SPPointInd*)malloc(sizeof(SPPointInd)*(size-middle));
+	leftArr = (SPPointInd*)malloc(sizeof(SPPointInd)*middle);
+	rightArr = (SPPointInd*)malloc(sizeof(SPPointInd)*(size-middle));
 	//	cpyArrayInds = (SPPointInd*)malloc(sizeof(SPPointInd)*size);
 	LRArray = (int*)malloc(sizeof(int)*size);//SHOSHAN: =the X array, dynamically allocated because size is defined only in runtime
-	assertNotNull(LRArray); //TODO culdnt return null in a void func
+	assert(LRArray != NULL); //TODO culdnt return null in a void func
 	map1 = (int*)malloc(sizeof(int)*size);
-	assertNotNull(map1); //TODO culdnt return null in a void func
+	assert(map1 != NULL); //TODO culdnt return null in a void func
 	map2 = (int*)malloc(sizeof(int)*size);
-	assertNotNull(map2); //TODO culdnt return null in a void func
+	assert(map2 != NULL); //TODO culdnt return null in a void func
 	//	for(i = 0; i < size; i++){ //SHOSHAN making a copy of pointArray-NOT sure we still need this copy
 	//	cpyArrayInds[i] = spPointIndCreate(pointArray[i],i);
 	//}

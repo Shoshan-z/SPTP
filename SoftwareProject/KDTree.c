@@ -12,10 +12,14 @@
 #include <assert.h>
 #include "SPPoint.h"
 #include "KDTree.h"
+#include "SPKDArray.h"
+#include <math.h>
+#include <time.h>
+
 typedef struct kd_tree_node* KDTreeNode;
 
 
-KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
+KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
 	//TODO we first need to build a kd-array with all features stored in it (this takes 𝑂(𝑑×𝑛𝑙𝑜𝑔(𝑛))
 	//and then we recursively apply the following steps:
 	KDTreeNode root = NULL;
@@ -23,7 +27,6 @@ KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int increment
 	int random = 0;
 	int splitDim = 0;
 	int middle = 0;
-	int cols = 0;
 	int size =0;
 	int coordinates =0;
 	int inc = 0; // will hold the new incrementingDimension
@@ -31,9 +34,9 @@ KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int increment
 	SPPointInd** leftKDArr;
 	SPPointInd** rightKDArr;
 	//SPPoint* pointArray;//TODO where do we get it from if needed at all
-	int coordinates = sizeof (kdarr) / sizeof (kdarr[0]);// =num of rows = num of coordinates in each point
-	int size=sizeof(kdarr[0])/sizeof(kdarr[0][0]);//=number of cols = number of different points
-	int middle = (int)(ceil(size/2));
+	coordinates = sizeof (kdarr) / sizeof (kdarr[0]);// =num of rows = num of coordinates in each point
+	size=sizeof(kdarr[0])/sizeof(kdarr[0][0]);//=number of cols = number of different points
+	middle = (int)(ceil(size/2));
 
 	leftKDArr = (SPPointInd**)malloc(sizeof (SPPointInd*)*middle);//TODO check size?
 	if(leftKDArr ==NULL){
@@ -43,12 +46,13 @@ KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int increment
 	if(rightKDArr ==NULL){
 			return NULL;
 		}
-	if (kdarr == NULL || SPLIT_METHOD == NONE || incrementingDimension < 0){
+	if (kdarr == NULL || spKDTreeSplitMethod == NONE || incrementingDimension < 0){
 		return NULL;// TODO verify if split method = NONE should we return null or what?
 	}
 
 	if (size==1){ // stop criteria
-		root= initNode(-1, -1.0, NULL, NULL,kdarr[0]->point);// TODO verify what is invalid in val
+		root= initNode(-1, -1.0, NULL, NULL);// TODO verify what is invalid in val
+		root->data= kdarr[0][0]->point;
 		return root;
 	}
 	if (spKDTreeSplitMethod == MAX_SPREAD){
@@ -70,16 +74,18 @@ KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int increment
 	node = initEmptyNode();
 	node->dim = splitDim;
 	node->val = spPointGetAxisCoor(kdarr[splitDim][middle]->point, splitDim);// TODO is this what val means? the middle according to the split coordinate
-	node->left = init(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
-	node->right = init(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
+	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
+	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;
+
+return NULL; //TODO not supposed to get here
 }
 
 
 
-KDTreeNode initNode(int dim, double val, SPKDArray left,SPKDArray right){// ~~SPKDTree
+KDTreeNode initNode(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~SPKDTree
 		KDTreeNode newNode=NULL;
-		newNode= (KDTreeNode) malloc(sizeof (*KDTreeNode));//TODO verify dereference
+		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));//TODO verify dereference
 		if (newNode ==NULL){
 			return NULL;
 		}
@@ -90,13 +96,17 @@ KDTreeNode initNode(int dim, double val, SPKDArray left,SPKDArray right){// ~~SP
 		newNode->val = val;
 		newNode->left =left;
 		newNode->right =right;
+		newNode->data = NULL;
+
+		return newNode;
 }
 KDTreeNode initEmptyNode(){// ~~ SPKDTree
 	    KDTreeNode newNode=NULL;
-		newNode= (KDTreeNode) malloc(sizeof *KDTreeNode);//TODO verify dereference
+		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));//TODO verify dereference
 		if (newNode ==NULL){
 					return NULL;
 		}
+		return newNode;
 }
 
 
@@ -104,7 +114,6 @@ int findMaxSpread(SPKDArray kdArr){
 	int min = 0;
 	int max = 0;
 	int i = 0;
-	int j=0;
 	int maxSpread = 0;
 	int spreadDim = 0;// the dimension we'll spread according to (i.e x=0, y=1 etc)
 	int* spreadByDim = NULL;//array of spread of each dim
@@ -130,7 +139,7 @@ int findMaxSpread(SPKDArray kdArr){
 	}
 	maxSpread = spreadByDim[0];
 	for(i=1; i<coordinates; i++){// find the first coordinate with the max spread
-		if( spreadByDim[i]> max){
+		if( spreadByDim[i]> maxSpread){
 			spreadDim  =  i;
 		}
 	}

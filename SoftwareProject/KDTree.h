@@ -7,11 +7,12 @@
 
 #ifndef KDTREE_H_
 #define KDTREE_H_
+#include "SPKDArray.h"
 struct kd_tree_node{
 	int dim;//the splitting dimension
 	double val;//The median value of the splitting dimension
-	KDTreeNode left;//Pointer to the left subtree
-	KDTreeNode right;//Pointer to the right subtree
+	struct kd_tree_node* left;//Pointer to the left subtree
+	struct kd_tree_node* right;//Pointer to the right subtree
 	SPPoint data; //Pointer to a point (only if the current node is a leaf) otherwise this field value is NULL
 };
 
@@ -25,7 +26,7 @@ typedef struct kd_tree_node* KDTreeNode;
  * NULL in case allocation failure occurred OR kdarr is NULL OR SPLIT_METHOD is NONE  OR incrementingDimension <0
  * Otherwise, the new KDTree is returned
  */
-KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension);
+KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension);
 /**
  *
  * Given data array, split Method and an incrementingDimension.
@@ -34,7 +35,7 @@ KDTreeNode init(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int increment
  * NULL in case allocation failure occurred OR left or right is NULL OR dim<0
  * Otherwise, the new KDTreeNode is returned
  */
-KDTreeNode initNode(int dim, double val, SPKDArray left,SPKDArray right);//SHOSHAN ~~SPKDTree
+KDTreeNode initNode(int dim, double val, KDTreeNode left,KDTreeNode right);//SHOSHAN ~~SPKDTree
 /**
  *
  *create a new KDTree Node
