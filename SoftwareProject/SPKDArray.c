@@ -9,6 +9,7 @@
 #include <math.h> //TODO SHOSHAN - we can use this, right?
 
 
+
 typedef SPPointInd** SPKDArray;
 int coord =0;
 void chooseCoordinate(int coordinate){ // TODO SHOSHAN: The change Ben suggested-decide if we want to use it
