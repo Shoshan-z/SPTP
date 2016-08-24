@@ -19,7 +19,7 @@
 typedef struct kd_tree_node* KDTreeNode;
 
 
-KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
+KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension,int size){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
 	//TODO we first need to build a kd-array with all features stored in it (this takes 𝑂(𝑑×𝑛𝑙𝑜𝑔(𝑛))
 	//and then we recursively apply the following steps:
 	KDTreeNode root = NULL;
@@ -27,36 +27,51 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	int random = 0;
 	int splitDim = 0;
 	int middle = 0;
-	int size =0;
+
 	int coordinates =0;
 	int inc = 0; // will hold the new incrementingDimension
 	KDTreeNode node = NULL;
-	SPPointInd** leftKDArr;
-	SPPointInd** rightKDArr;
+	SPPointInd** leftKDArrIN;
+	SPPointInd** rightKDArrIN;
+	SPKDArray leftKDArr = NULL;
+	SPKDArray rightKDArr = NULL;
+
 	//SPPoint* pointArray;//TODO where do we get it from if needed at all
 	coordinates = sizeof (kdarr) / sizeof (kdarr[0]);// =num of rows = num of coordinates in each point
-	size=sizeof(kdarr[0])/sizeof(kdarr[0][0]);//=number of cols = number of different points
+	//size=sizeof(kdarr[0])/sizeof(kdarr[0][0]);//=number of cols = number of different points
 	middle = (int)(ceil(size/2));
-
-	leftKDArr = (SPPointInd**)malloc(sizeof (SPPointInd*)*middle);//TODO check size?
+	leftKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
 	if(leftKDArr ==NULL){
 		return NULL;
 	}
-	rightKDArr = (SPPointInd**)malloc(sizeof (SPPointInd*)*(size-middle));//TODO check size?
-	if(rightKDArr ==NULL){
+	leftKDArrIN = (SPPointInd**)malloc(sizeof (SPPointInd*)*middle);//TODO check size?
+	if(leftKDArrIN ==NULL){
+		return NULL;
+	}
+	leftKDArr->kdArray = leftKDArrIN;
+
+	rightKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
+	if(rightKDArr==NULL){
+		return NULL;
+	}
+
+	rightKDArrIN = (SPPointInd**)malloc(sizeof (SPPointInd*)*(size-middle));//TODO check size?
+	if(rightKDArrIN ==NULL){
 			return NULL;
 		}
+	rightKDArr->kdArray=rightKDArrIN;
+
 	if (kdarr == NULL || spKDTreeSplitMethod == NONE || incrementingDimension < 0){
 		return NULL;// TODO verify if split method = NONE should we return null or what?
 	}
 
 	if (size==1){ // stop criteria
 		root= initNode(-1, -1.0, NULL, NULL);// TODO verify what is invalid in val
-		root->data= kdarr[0][0]->point;
+		root->data= kdarr->kdArray[0][0]->point;
 		return root;
 	}
 	if (spKDTreeSplitMethod == MAX_SPREAD){
-		spread= findMaxSpread(kdarr);
+		spread= findMaxSpread(kdarr, size);
 		splitDim= spread;
 	}
 	if (spKDTreeSplitMethod == RANDOM){
@@ -73,9 +88,9 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	split(kdarr, splitDim, leftKDArr, rightKDArr, size);
 	node = initEmptyNode();
 	node->dim = splitDim;
-	node->val = spPointGetAxisCoor(kdarr[splitDim][middle]->point, splitDim);// TODO is this what val means? the middle according to the split coordinate
-	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
-	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
+	node->val = spPointGetAxisCoor(kdarr->kdArray[splitDim][middle]->point, splitDim);// TODO is this what val means? the middle according to the split coordinate
+	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1,middle);
+	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1,(size-middle));
 	node-> data = NULL;
 
 return NULL; //TODO not supposed to get here
@@ -110,7 +125,7 @@ KDTreeNode initEmptyNode(){// ~~ SPKDTree
 }
 
 
-int findMaxSpread(SPKDArray kdArr){
+int findMaxSpread(SPKDArray kdArr, int size){
 	int min = 0;
 	int max = 0;
 	int i = 0;
@@ -118,7 +133,7 @@ int findMaxSpread(SPKDArray kdArr){
 	int spreadDim = 0;// the dimension we'll spread according to (i.e x=0, y=1 etc)
 	int* spreadByDim = NULL;//array of spread of each dim
 	int coordinates = sizeof(kdArr)/sizeof(kdArr[0]);// =num of rows = num of coordinates in each point
-	int cols=sizeof(kdArr[0])/ sizeof(kdArr[0][0]);//=number of cols = number of different points
+	int cols=size;//=number of cols = number of different points
 	spreadByDim = (int*)malloc(coordinates*sizeof(int));
 
 	for(i=0; i<coordinates; i++){ // go over each coordinate
@@ -133,8 +148,8 @@ int findMaxSpread(SPKDArray kdArr){
 //		spreadByDim[i] = max-min;
 //		min=0;
 //		max=0;
-		max = spPointGetAxisCoor(kdArr[i][cols-1]->point,i);
-		min =spPointGetAxisCoor(kdArr[i][0]->point,i);
+		max = spPointGetAxisCoor(kdArr->kdArray[i][cols-1]->point,i);
+		min =spPointGetAxisCoor(kdArr->kdArray[i][0]->point,i);
 		spreadByDim[i] = max-min;
 	}
 	maxSpread = spreadByDim[0];

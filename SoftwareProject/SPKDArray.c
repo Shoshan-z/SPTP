@@ -8,9 +8,9 @@
 #include "SPPoint.h"
 #include <math.h> //TODO SHOSHAN - we can use this, right?
 
+typedef struct kdarray* SPKDArray;
 
 
-typedef SPPointInd** SPKDArray;
 int coord =0;
 void chooseCoordinate(int coordinate){ // TODO SHOSHAN: The change Ben suggested-decide if we want to use it
 	coord= coordinate;
@@ -50,12 +50,13 @@ void copyPointIndArray(SPPointInd* source, int size, SPPointInd* target){
 SPKDArray init(SPPoint* arr, int size){
 	int i = 0;
 	int dim = 0;
-	SPKDArray kdArray;
+	SPKDArray newKDArray=NULL;
+	SPPointInd** kdArray;
 	if (arr == NULL || size <=0){
 		return NULL; //TODO check if need to print something to logger and if it should return null
 	}
-	//SPPoint* pointArray =NULL;
-	//pointArray = (SPPoint*) malloc(sizeof(SPPoint) * size);
+	newKDArray = (SPKDArray)malloc(sizeof(struct kdarray));
+
 	SPPointInd* pointIndArray =NULL;
 	dim = spPointGetDimension(arr[0]);
 	pointIndArray = (SPPointInd*) malloc(sizeof(SPPointInd) * size);
@@ -84,8 +85,9 @@ SPKDArray init(SPPoint* arr, int size){
 			coord++;    // coord is the coordinate we currently sorting according to
 		}
 	}
-
-	return kdArray;
+	newKDArray->kdArray=kdArray;
+	newKDArray->points = arr;
+	return newKDArray;
 }
 
 int compare (const void * a, const void * b)
@@ -125,12 +127,12 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr,
 	int indexInOrigin = 0;
 	int* map1;
 	int* map2;
-	int rows= spPointGetDimension(kdArr[0][0]->point);
-	SPPointInd* leftArr = NULL;
-	SPPointInd* rightArr = NULL;
+	int rows= spPointGetDimension(kdArr->kdArray[0][0]->point);
+	SPPoint* p1 = NULL;
+	SPPoint* p2 = NULL;
 	//SPPointInd* cpyArrayInds = NULL;
-	leftArr = (SPPointInd*)malloc(sizeof(SPPointInd)*middle);
-	rightArr = (SPPointInd*)malloc(sizeof(SPPointInd)*(size-middle));
+	p1 = (SPPoint*)malloc(sizeof(SPPoint)*middle);
+	p2 = (SPPoint*)malloc(sizeof(SPPoint)*(size-middle));
 	//	cpyArrayInds = (SPPointInd*)malloc(sizeof(SPPointInd)*size);
 	LRArray = (int*)malloc(sizeof(int)*size);//SHOSHAN: =the X array, dynamically allocated because size is defined only in runtime
 	assert(LRArray != NULL); //TODO couldn't return null in a void func
@@ -142,7 +144,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr,
 	//	cpyArrayInds[i] = spPointIndCreate(pointArray[i],i);
 	//}
 	for(i = 0; i < size; i++){ //SHOSHAN filling in the LRArray (X in doc)
-		indexInOrigin = kdArr[coor][i]->index;
+		indexInOrigin = kdArr->kdArray[coor][i]->index;
 		if( i < middle){
 			LRArray[indexInOrigin]=0;
 		}
@@ -150,13 +152,22 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr,
 			LRArray[indexInOrigin]=1;
 		}
 	}
+	l=0;
+	r=0;
 	//TODO verify if we have to use p1 p2 and map1 map2
-	for(i = 0; i < middle; i++){// SHOHAN split to leftArr(p1 in doc) and rightArr(p2 in doc)
-		leftArr[i]=kdArr[coor][i];
+	for(i = 0; i < size; i++){// SHOHAN split to leftArr(p1 in doc) and rightArr(p2 in doc)
+		if (LRArray[i]==0){
+		p1[l]=(kdArr->points)[i];
+		l++;
+		}
+		else{
+		p2[r]=(kdArr->points)[i];
+		r++;
+
+		}
 	}
-	for(i = middle, j = 0 ; i < size ; i++, j++){
-		rightArr[j]= kdArr[coor][i];
-	}
+l=0;
+r=0;
 	for(i = 0; i < size; i++){
 		if (LRArray[i]==0){
 			map1[i]= l;
@@ -170,23 +181,26 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr,
 			r++;
 		}
 	}
+
+
 	l=0;
 	r=0;
-
-
 	for(i=0; i<rows; i++){
 		for (j=0; j<size; j++){
-			if(LRArray[kdArr[i][j]->index]==0){
-				leftKDArr[i][l]=spPointIndCopy(leftArr[map1[kdArr[i][j]->index]]);//p1[map1[col]];
+			indexInOrigin=kdArr->kdArray[i][j]->index;
+			if (LRArray[indexInOrigin] == 0){ //X array in doc
+
+//			if(LRArray[kdArr->kdArray[i][j]->index]==0){
+				(leftKDArr->kdArray)[i][l]=spPointIndCreate((p1[map1[((kdArr->kdArray)[i][j])->index]]), map1[((kdArr->kdArray)[i][j])->index]);//p1[map1[col]];
 				//*leftKDArr[i][l]= kdArr[i][j];
-				(leftKDArr[i][r])->index= map1[kdArr[i][j]->index];
+				//((leftKDArr->kdArray)[i][l])->index= map1[((kdArr->kdArray)[i][j])->index];
 				l++;
 			}
-			else if(LRArray[kdArr[i][j]->index]==1){
+			else if(LRArray[indexInOrigin]==1){
 			//	*rightKDArr[i][r]= kdArr[i][j];
-				rightKDArr[i][r]=spPointIndCopy(rightArr[map2[kdArr[i][j]->index]]);
+				(rightKDArr->kdArray)[i][r]=spPointIndCreate((p2[map1[((kdArr->kdArray)[i][j])->index]]), map2[((kdArr->kdArray)[i][j])->index]);
 		//		rightKDArr[i][map2[kdArr[i][j]->index]]=spPointIndCopy(rightArr[map2[kdArr[i][j]->index]]);
-				(rightKDArr[i][r])->index= map2[kdArr[i][j]->index];
+			//	((rightKDArr->kdArray)[i][r])->index= map2[((kdArr->kdArray)[i][j])->index];
 				r++;
 			}
 		}

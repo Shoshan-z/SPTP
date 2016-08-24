@@ -26,7 +26,7 @@ typedef struct kd_tree_node* KDTreeNode;
  * NULL in case allocation failure occurred OR kdarr is NULL OR SPLIT_METHOD is NONE  OR incrementingDimension <0
  * Otherwise, the new KDTree is returned
  */
-KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension);
+KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension, int size);
 /**
  *
  * Given data array, split Method and an incrementingDimension.
@@ -49,7 +49,7 @@ KDTreeNode initEmptyNode();
  * find the coordinate with the highest spread, where spread is the
  * difference between the maximum and minimum of the 𝑖𝑡ℎ coordinate of all points
  */
-int findMaxSpread(SPKDArray kdArr);
+int findMaxSpread(SPKDArray kdArr, int size);
 
 
 
