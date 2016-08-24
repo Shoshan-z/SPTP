@@ -28,7 +28,7 @@ extern int coor;
  */
 SPKDArray init(SPPoint* arr, int size);
 int compare (const void * a, const void * b);
-void split(SPKDArray kdArr, int coor, SPKDArray* leftArrP, SPKDArray* rightArrP, int size);//, SPPoint* pointArray);
+void split(SPKDArray kdArr, int coor, SPKDArray leftArrP, SPKDArray rightArrP, int size, SPPoint* p);//, SPPoint* pointArray);
 SPPointInd spPointIndCreate(SPPoint point,int index);
 SPPointInd spPointIndCopy(SPPointInd source);
 void chooseCoordinate(int coordinate); //TODO check if we want to use it

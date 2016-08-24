@@ -56,11 +56,8 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.debug.1344239831.1064899512" name="testmain.cpp" rcbsApplicability="disable" resourcePath="testmain.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.debug.755319590.2008042550">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.debug.755319590.2008042550" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.debug.755319590"/>
-					</fileInfo>
 					<sourceEntries>
-						<entry excluding="testmain.cpp|SPKDArray.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -105,11 +102,8 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
-					<fileInfo id="cdt.managedbuild.config.gnu.mingw.exe.release.789274230.699552347" name="testmain.cpp" rcbsApplicability="disable" resourcePath="testmain.cpp" toolsToInvoke="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.release.2090416690.1771590744">
-						<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.release.2090416690.1771590744" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.mingw.exe.release.2090416690"/>
-					</fileInfo>
 					<sourceEntries>
-						<entry excluding="testmain.cpp|SPKDArray.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

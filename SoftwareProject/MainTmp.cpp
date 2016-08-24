@@ -5,7 +5,7 @@ extern "C" {
 }
 
 
-int main(int argc, char** argv) {
+int main1(int argc, char** argv) {
 	char* configFName = "spcbir.config";
 	SPConfig config = NULL;
 	SP_CONFIG_MSG msg;

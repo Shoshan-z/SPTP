@@ -114,10 +114,10 @@ int compare (const void * a, const void * b)
 	}
 }
 
-void split(SPKDArray kdArr, int coor, SPKDArray* leftKDArr, SPKDArray* rightKDArr, int size){//, SPPoint* pointArray){//TODO !!! SHOSHAN check pointers to point arrays left and right
+void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr, int size){//, SPPoint* pointArray){//TODO !!! SHOSHAN check pointers to point arrays left and right
 	//int size =sizeof(kdArr[0])/sizeof(kdArr[0][0]);//SHOSHAN: if we decide size is not an arg well calculate it=num of cols
 	int* LRArray = NULL;
-	int middle = (int)(ceil(size/2));
+	int middle = (int)(ceil((double)size/2));
 	int i = 0;
 	int j = 0;
 	int l = 0;// running index for left array
@@ -125,7 +125,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray* leftKDArr, SPKDArray* rightKDAr
 	int indexInOrigin = 0;
 	int* map1;
 	int* map2;
-	int rows= sizeof(kdArr)/sizeof(kdArr[0]);
+	int rows= spPointGetDimension(kdArr[0][0]->point);
 	SPPointInd* leftArr = NULL;
 	SPPointInd* rightArr = NULL;
 	//SPPointInd* cpyArrayInds = NULL;
@@ -133,11 +133,11 @@ void split(SPKDArray kdArr, int coor, SPKDArray* leftKDArr, SPKDArray* rightKDAr
 	rightArr = (SPPointInd*)malloc(sizeof(SPPointInd)*(size-middle));
 	//	cpyArrayInds = (SPPointInd*)malloc(sizeof(SPPointInd)*size);
 	LRArray = (int*)malloc(sizeof(int)*size);//SHOSHAN: =the X array, dynamically allocated because size is defined only in runtime
-	assert(LRArray != NULL); //TODO culdnt return null in a void func
+	assert(LRArray != NULL); //TODO couldn't return null in a void func
 	map1 = (int*)malloc(sizeof(int)*size);
-	assert(map1 != NULL); //TODO culdnt return null in a void func
+	assert(map1 != NULL); //TODO couldn't return null in a void func
 	map2 = (int*)malloc(sizeof(int)*size);
-	assert(map2 != NULL); //TODO culdnt return null in a void func
+	assert(map2 != NULL); //TODO couldn't return null in a void func
 	//	for(i = 0; i < size; i++){ //SHOSHAN making a copy of pointArray-NOT sure we still need this copy
 	//	cpyArrayInds[i] = spPointIndCreate(pointArray[i],i);
 	//}
@@ -159,26 +159,34 @@ void split(SPKDArray kdArr, int coor, SPKDArray* leftKDArr, SPKDArray* rightKDAr
 	}
 	for(i = 0; i < size; i++){
 		if (LRArray[i]==0){
-			map1[i]= leftArr[l]->index;
+			map1[i]= l;
 			map2[i]= -1;
 			l++;
 		}
 		else{   // LRArray[i]= 1
-			map2[i]= rightArr[r]->index;
+			//map2[i]= rightArr[r]->index;
+			map2[i]=r;
 			map1[i]= -1;
 			r++;
 		}
 	}
 	l=0;
 	r=0;
+
+
 	for(i=0; i<rows; i++){
 		for (j=0; j<size; j++){
 			if(LRArray[kdArr[i][j]->index]==0){
-				*leftKDArr[i][l]= kdArr[i][j];
+				leftKDArr[i][l]=spPointIndCopy(leftArr[map1[kdArr[i][j]->index]]);//p1[map1[col]];
+				//*leftKDArr[i][l]= kdArr[i][j];
+				(leftKDArr[i][r])->index= map1[kdArr[i][j]->index];
 				l++;
 			}
-			if(LRArray[kdArr[i][j]->index]==1){
-				*rightKDArr[i][r]= kdArr[i][j];
+			else if(LRArray[kdArr[i][j]->index]==1){
+			//	*rightKDArr[i][r]= kdArr[i][j];
+				rightKDArr[i][r]=spPointIndCopy(rightArr[map2[kdArr[i][j]->index]]);
+		//		rightKDArr[i][map2[kdArr[i][j]->index]]=spPointIndCopy(rightArr[map2[kdArr[i][j]->index]]);
+				(rightKDArr[i][r])->index= map2[kdArr[i][j]->index];
 				r++;
 			}
 		}
