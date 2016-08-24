@@ -198,7 +198,7 @@ r=0;
 			}
 			else if(LRArray[indexInOrigin]==1){
 			//	*rightKDArr[i][r]= kdArr[i][j];
-				(rightKDArr->kdArray)[i][r]=spPointIndCreate((p2[map1[((kdArr->kdArray)[i][j])->index]]), map2[((kdArr->kdArray)[i][j])->index]);
+				(rightKDArr->kdArray)[i][r]=spPointIndCreate((p2[map2[((kdArr->kdArray)[i][j])->index]]), map2[((kdArr->kdArray)[i][j])->index]);
 		//		rightKDArr[i][map2[kdArr[i][j]->index]]=spPointIndCopy(rightArr[map2[kdArr[i][j]->index]]);
 			//	((rightKDArr->kdArray)[i][r])->index= map2[((kdArr->kdArray)[i][j])->index];
 				r++;
