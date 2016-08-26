@@ -455,6 +455,9 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 		*msg = validateConfig(config);
 
 cleanup:
+	if (*msg == SP_CONFIG_CANNOT_OPEN_FILE ) {
+		return config;
+	};
 	if (*msg != SP_CONFIG_SUCCESS) {
 		printError(filename, lineNum, *msg);
 		if (config != NULL) {

@@ -45,7 +45,7 @@ struct sp_config_t {
 	SPLIT_METHOD spKDTreeSplitMethod;
 	int spKNN;
 	bool spMinimalGUI;
-	int spLoggerLevel;
+	SP_LOGGER_LEVEL spLoggerLevel;
 	char spLoggerFilename[1024];
 };
 

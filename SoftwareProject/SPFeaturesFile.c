@@ -4,19 +4,19 @@
 
 void storeFeatures(SPPoint* features, int numOfFeatures, char* imgPrefix, int imgIndex, char*  spImagesDirectory) {
 	FILE* fp = NULL;
-	char fileName[1024] = {0};
+	char imgName[1024] = {0};
 	int dim = 0;
 	int i = 0;
 	int j =0;
 	double curr = 0;
 
-	sprintf(fileName, "%s/%s%d.feats",spImagesDirectory, imgPrefix, imgIndex);
+	sprintf(imgName, "%s/%s%d.feats",spImagesDirectory, imgPrefix, imgIndex);
 
 	//TODO if features is NULL, handle error
 
 	dim = spPointGetDimension(features[0]);
 
-	fp = fopen(fileName, "wb");
+	fp = fopen(imgName, "wb");
 	fwrite(&imgIndex, sizeof(imgIndex), 1, fp);
 	fwrite(&numOfFeatures, sizeof(numOfFeatures), 1, fp);
 	fwrite(&dim, sizeof(int), 1, fp);
@@ -30,6 +30,7 @@ void storeFeatures(SPPoint* features, int numOfFeatures, char* imgPrefix, int im
 
 	fclose(fp);
 }
+
 
 //numOfFeatures will hold the number of features extracted from the file
 SPPoint* getFeaturesFromFile(int* numOfFeatures, char* imgPrefix, int imgIndex, char* spImagesDirectory) {
