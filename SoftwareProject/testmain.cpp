@@ -4,11 +4,61 @@
 extern "C" {
 	#include "SPConfig.h"
     #include "SPPoint.h"
-#include "SPKDArray.h"
+	#include "SPKDArray.h"
 }
 
+//int** matrix;
+//SPPoint* points;
+//int size;
+//int dim;
 
+SPKDArray CreateEmptyKDArray(int dim, int size) {
+	SPKDArray kdArr = NULL;
+	SPPoint* points = NULL;
+	int** matrix = NULL;
+	int i = 0;
 
+	if (size==0 || dim ==0) {
+		return NULL;
+	}
+
+	kdArr = (SPKDArray) malloc(sizeof(struct kdarray));
+
+	points = (SPPoint*) malloc(sizeof(SPPoint)*size);
+
+	matrix = (int**) malloc(sizeof(int*)*dim);
+	for (i=0; i<dim; i++) {
+		matrix[i] = (int*) malloc(sizeof(int)*size);
+	}
+
+	kdArr->points = points;
+	kdArr->matrix = matrix;
+	kdArr->size = size;
+	kdArr->dim = dim;
+
+	return kdArr;
+}
+
+void SPKDArrayDestroy(SPKDArray kdArr) {
+	int dim = 0;
+	int size = 0;
+	int i = 0;
+
+	if (kdArr == NULL) return;
+
+	dim = kdArr->dim;
+	size = kdArr->size;
+
+	for (i=0; i<dim; i++) {
+		free(kdArr->matrix[i]);
+	}
+	free(kdArr->matrix);
+	for (i=0; i<size; i++) {
+		spPointDestroy(kdArr->points[i]);
+	}
+	free(kdArr->points);
+	free(kdArr);
+}
 
 int main() {
 	SPConfig config = NULL;
@@ -17,8 +67,8 @@ int main() {
 
 	config = spConfigCreate("config.txt", &msg);
 
-	printf("%d\n", msg);
-
+	//printf("%d\n", msg);
+/*
 	if (msg == SP_CONFIG_SUCCESS ) {
 		printf("%s\n", config->spImagesDirectory);
 		printf("%s\n",config->spImagesPrefix);
@@ -35,7 +85,8 @@ int main() {
 		printf("%d\n",config->spLoggerLevel);
 		printf("%s\n", config->spLoggerFilename);
 
-	}
+
+	}*/
 
 		char path[1024] = {0};
 		spConfigGetImagePath(path, config, 3 );
@@ -43,110 +94,80 @@ int main() {
 
 		char PCApath[1024] = {0};
 		spConfigGetPCAPath(PCApath, config );
-		printf("%s\n", path);
-		printf("%s\n",PCApath);
-
-		SP_CONFIG_MSG misg ;
-		int t_f;
-		t_f=spConfigMinimalGui(config,&misg);
-		printf("%d\n", t_f);
-	//printf("AAAAAAAA\n");
 		int i=0;
 		int j=0;
-		//SPPointInd arri[2][5];
-		SPPointInd** arri= (SPPointInd**)malloc(sizeof(SPPointInd*)*2);
-		SPPointInd up[5];
-		SPPointInd down[5];
-		arri[0]=up;
-		arri[1]=down;
 		SPKDArray leftKDArr;
 		SPKDArray rightKDArr;
 		double point0[2]={1.0,2.0};
 		SPPoint a= spPointCreate(point0, 2, 1);
-		SPPointInd A= spPointIndCreate(a ,0);
+
 		double point1[2]={123.0,70.0};
 		SPPoint b= spPointCreate(point1, 2, 1);
-		SPPointInd B= spPointIndCreate(b ,1);
+
 		double point2[2]={2.0,7.0};
 		SPPoint c= spPointCreate(point2, 2, 1);
-		SPPointInd C= spPointIndCreate(c ,2);
+
 		double point3[2]={9.0,11.0};
 		SPPoint d= spPointCreate(point3, 2, 1);
-		SPPointInd D= spPointIndCreate(d ,3);
+
 		double point4[2]={3.0,4.0};
 		SPPoint e= spPointCreate(point4, 2, 1);
-		SPPointInd E= spPointIndCreate(e ,4);
+
 		SPPoint p[5]={a, b, c, d, e};
-		arri[0][0]=A;// A,C,E,   D,B
-		arri[0][1]=C;
-		arri[0][2]=E;
-		arri[0][3]=D;
-		arri[0][4]=B;
-		arri[1][0]=A;// A,E,C,    D,B
-		arri[1][1]=E;
-		arri[1][2]=C;
-		arri[1][3]=D;
-		arri[1][4]=B;
+
+		int** A = NULL;
+
+		A = (int**) malloc(sizeof(int*)*2);
+		for (int i =0; i<2; i++) {
+			A[i] = (int*) malloc(sizeof(int)*5);
+		}
+
+		A[0][0] = 0;
+		A[0][1] = 2;
+		A[0][2] = 4;
+		A[0][3] = 3;
+		A[0][4] = 1;
+
+		A[1][0] = 0;
+		A[1][1] = 4;
+		A[1][2] = 2;
+		A[1][3] = 3;
+		A[1][4] = 1;
+
 		SPKDArray big =NULL;
-		SPPointInd** leftKDArrIN=NULL;
-		SPPointInd** rightKDArrIN=NULL;
 
 		big=(SPKDArray)malloc(sizeof(struct kdarray));
-		big->kdArray = arri;
 		big->points =p;
+		big->matrix = A;
+		big->dim = 2;
+		big->size = 5;
 
-		int size=5;//TODO pass this sizeof(arri[0])/sizeof(arri[0][0]);//=number of cols = number of different points
-		int dim=2;//TODO get it from SPPointGETDIMENSION
-		int middle = (int)(ceil((double)size/2));//TODO add(double)
 
 
-		leftKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
-		if(leftKDArr ==NULL){
-			return NULL;
-		}
+		int middle = (int)(ceil((double)big->size/2));//TODO add(double)
 
-		leftKDArrIN = (SPPointInd**)malloc(sizeof (SPPointInd*)*dim);//TODO check size?
-		if(leftKDArr ==NULL){
-						return NULL;
-					}
-		for(i=0; i<dim; i++){//TODO add the for loops
-			leftKDArrIN[i]= (SPPointInd*)malloc(sizeof(SPPointInd)*middle);
-			if(leftKDArrIN[i] ==NULL){
-				return NULL;
+
+		leftKDArr = CreateEmptyKDArray(2, middle);
+
+		rightKDArr = CreateEmptyKDArray(2, big->size-middle);
+
+		split(big, 0, leftKDArr, rightKDArr);//, SPPoint* pointArray)
+
+		printf("A1 (left KDARR)\n");
+		for (i=0; i<leftKDArr->dim; i++) {
+			for(j=0; j<leftKDArr->size; j++) {
+				printf("%d ", leftKDArr->matrix[i][j]);
 			}
+			printf("\n");
 		}
 
-		leftKDArr->kdArray = leftKDArrIN;
-
-		rightKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
-		if(rightKDArr ==NULL){
-			return NULL;
-		}
-
-		rightKDArrIN = (SPPointInd**)malloc(sizeof (SPPointInd*)*dim);//TODO check size?
-		if(rightKDArr ==NULL){
-						return NULL;
+		printf("A2 (right KDARR)\n");
+		for (i=0; i<rightKDArr->dim; i++) {
+			for(j=0; j<rightKDArr->size; j++) {
+				printf("%d ", rightKDArr->matrix[i][j]);
 					}
-		for(i=0; i<dim; i++){//TODO add the for loops
-			rightKDArrIN[i]= (SPPointInd*)malloc(sizeof(SPPointInd)*middle);
-			if(rightKDArrIN[i] ==NULL){
-				return NULL;
+			printf("\n");
 			}
-		}
-
-		rightKDArr->kdArray = rightKDArrIN;
-
-
-
-
-
-
-
-
-
-
-
-		split(big, 0, leftKDArr, rightKDArr, 5);//, SPPoint* pointArray)
 
 
 	return 0;
