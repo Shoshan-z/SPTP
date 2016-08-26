@@ -7,7 +7,6 @@
 extern "C" {
 #include "SPConfig.h"
 #include "SPPoint.h"
-#include "SPConfig.h"
 }
 
 namespace sp {

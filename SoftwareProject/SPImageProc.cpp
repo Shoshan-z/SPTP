@@ -10,7 +10,6 @@
 #include "SPImageProc.h"
 extern "C" {
 #include "SPLogger.h"
-#include "SPPoint.h"
 }
 
 using namespace cv;
@@ -203,6 +202,7 @@ SPPoint* sp::ImageProc::getImageFeatures(const char* imagePath, int index,
 		}
 		resPoints[i] = spPointCreate(pcaSift, pcaDim, index);
 	}
+	free(pcaSift);
 	return resPoints;
 }
 
