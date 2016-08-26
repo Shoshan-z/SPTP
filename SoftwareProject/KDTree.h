@@ -35,7 +35,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
  * NULL in case allocation failure occurred OR left or right is NULL OR dim<0
  * Otherwise, the new KDTreeNode is returned
  */
-KDTreeNode initNode(int dim, double val, KDTreeNode left,KDTreeNode right);//SHOSHAN ~~SPKDTree
+KDTreeNode initLeaf(int dim, double val, KDTreeNode left,KDTreeNode right);
 /**
  *
  *create a new KDTree Node

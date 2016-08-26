@@ -20,12 +20,12 @@
 typedef struct kd_tree_node* KDTreeNode;
 
 
+
 KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
 	//TODO we first need to build a kd-array with all features stored in it
 	//and then we recursively apply the following steps:
 //!!! the recursive call is already there after the split: in the creation of the node at the bottom- in it's left and right fields..
-	KDTreeNode root = NULL;
-	int i = 0;
+	KDTreeNode returnNode = NULL;
 	int spread = 0;
 	int random = 0;
 	int splitDim = 0;
@@ -34,54 +34,26 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	int coordinates =0;
 	int inc = 0; // will hold the new incrementingDimension
 	KDTreeNode node = NULL;
-	SPPointInd** leftKDArrIN;
-	SPPointInd** rightKDArrIN;
 	SPKDArray leftKDArr = NULL;
 	SPKDArray rightKDArr = NULL;
-	size= kdarr->size;
-	coordinates = kdarr->dim;// =num of rows = num of coordinates in each point
-	middle = (int)(ceil(size/2));
-
-	leftKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
-	if(leftKDArr ==NULL){
-		return NULL;
-	}
-	leftKDArrIN = (int**)malloc(sizeof (int*)*coordinates);//TODO!!! shouldn't it already been allocated in malloc of the whole struct
-	if(leftKDArrIN ==NULL){
-		return NULL;
-	}
-	for(i=0; i<coordinates; i++){//TODO add the for loops
-			leftKDArrIN[i]= (int*)malloc(sizeof(int)*middle);
-			if(leftKDArrIN[i] ==NULL){
-				return NULL;
-			}
-		}
-	leftKDArr->matrix = leftKDArrIN;
-
-	rightKDArr = (SPKDArray)malloc(sizeof(struct kdarray));
-	if(rightKDArr ==NULL){
-		return NULL;
-	}
-	rightKDArrIN = (int**)malloc(sizeof (int*)*coordinates);//TODO!!! shouldn't it already been allocated in malloc of the whole struct
-	if(rightKDArrIN ==NULL){
-		return NULL;
-	}
-	for(i=0; i<coordinates; i++){//TODO add the for loops
-			rightKDArrIN[i]= (int*)malloc(sizeof(int)*(size-middle));
-			if(rightKDArrIN[i] ==NULL){
-				return NULL;
-			}
-		}
-	rightKDArr->matrix = rightKDArrIN;
 
 	if (kdarr == NULL || spKDTreeSplitMethod == NONE || incrementingDimension < 0){
 		return NULL;// TODO verify if split method = NONE should we return null or what?
 	}
 
+	size= kdarr->size;
+	coordinates = kdarr->dim;// =num of rows = num of coordinates in each point
+	middle = (int)(ceil((double) size/2));
+
+
+	leftKDArr = allocateKDArray(coordinates, middle);
+	rightKDArr = allocateKDArray(coordinates, size-middle);
+
 	if (size==1){ // stop criteria
-		root= initNode(-1, -1.0, NULL, NULL);// TODO verify what is invalid in val
-		root->data= (kdarr->points)[(kdarr->matrix)[0][0]];//TODO!!! maybe we can directly pass points for it has only one point in it
-		return root;
+		returnNode= initLeaf(-1, -1.0, NULL, NULL);// TODO verify what is invalid in val
+		SPPoint p = spPointCopy((kdarr->points)[(kdarr->matrix)[0][0]]);
+		returnNode->data= p;//TODO!!! maybe we can directly pass points for it has only one point in it
+		return returnNode;
 	}
 	if (spKDTreeSplitMethod == MAX_SPREAD){
 		spread= findMaxSpread(kdarr);
@@ -100,7 +72,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	}
 	split(kdarr, splitDim, leftKDArr, rightKDArr);
 	node = initEmptyNode();
-	node->dim = splitDim;
+	node->dim = coordinates;
 	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle]], splitDim);// TODO is this what val means? the middle according to the split coordinate
 	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
@@ -111,15 +83,14 @@ return NULL; //TODO not supposed to get here
 
 
 
-KDTreeNode initNode(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~SPKDTree
+KDTreeNode initLeaf(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~SPKDTree
 		KDTreeNode newNode=NULL;
+
 		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));//TODO verify dereference
 		if (newNode ==NULL){
 			return NULL;
 		}
-		if(dim<0 ){//TODO check if valid: val<0
-			return NULL;
-		}
+
 		newNode->dim = dim;
 		newNode->val = val;
 		newNode->left =left;

@@ -5,6 +5,7 @@ extern "C" {
 	#include "SPConfig.h"
     #include "SPPoint.h"
 	#include "SPKDArray.h"
+	#include "KDTree.h"
 }
 
 //int** matrix;
@@ -12,7 +13,7 @@ extern "C" {
 //int size;
 //int dim;
 
-SPKDArray CreateEmptyKDArray(int dim, int size) {
+SPKDArray allocateEmptyKDArray(int dim, int size) {
 	SPKDArray kdArr = NULL;
 	SPPoint* points = NULL;
 	int** matrix = NULL;
@@ -24,14 +25,12 @@ SPKDArray CreateEmptyKDArray(int dim, int size) {
 
 	kdArr = (SPKDArray) malloc(sizeof(struct kdarray));
 
-	points = (SPPoint*) malloc(sizeof(SPPoint)*size);
-
 	matrix = (int**) malloc(sizeof(int*)*dim);
 	for (i=0; i<dim; i++) {
 		matrix[i] = (int*) malloc(sizeof(int)*size);
 	}
 
-	kdArr->points = points;
+	kdArr->points = NULL;
 	kdArr->matrix = matrix;
 	kdArr->size = size;
 	kdArr->dim = dim;
@@ -143,7 +142,7 @@ int main() {
 		big->size = 5;
 
 
-
+		/*
 		int middle = (int)(ceil((double)big->size/2));//TODO add(double)
 
 
@@ -161,6 +160,8 @@ int main() {
 			printf("\n");
 		}
 
+
+
 		printf("A2 (right KDARR)\n");
 		for (i=0; i<rightKDArr->dim; i++) {
 			for(j=0; j<rightKDArr->size; j++) {
@@ -168,7 +169,21 @@ int main() {
 					}
 			printf("\n");
 			}
+*/
 
+		SPKDArray testInit = NULL;
+		testInit = init(p, 5);
+
+		printf("A (TestINIT)\n");
+		for (i=0; i<testInit->dim; i++) {
+			for(j=0; j<testInit->size; j++) {
+				printf("%d ", testInit->matrix[i][j]);
+					}
+			printf("\n");
+			}
+
+	KDTreeNode testTree = NULL;
+	testTree = initTree(testInit, INCREMENTAL, 0);
 
 	return 0;
 }

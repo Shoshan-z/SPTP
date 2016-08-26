@@ -62,6 +62,31 @@ void PointIndToIntArray(SPPointInd* source, int size, int* target){
 	}
 }
 
+SPKDArray allocateKDArray(int dim, int size){
+	SPKDArray KDArr = NULL;
+	int** matrix = NULL;
+	int i = 0;
+
+	KDArr = (SPKDArray)malloc(sizeof(struct kdarray));
+	if(KDArr ==NULL){
+		return NULL;
+	}
+	matrix = (int**)malloc(sizeof (int*)*dim);
+	if(matrix ==NULL){
+		return NULL;
+	}
+	for(i=0; i<dim; i++){//TODO add the for loops
+			matrix[i]= (int*)malloc(sizeof(int)*size);
+			if(matrix[i] ==NULL){
+				return NULL;
+			}
+		}
+	KDArr->matrix = matrix;
+
+	return KDArr;
+}
+
+
 SPKDArray init(SPPoint* arr, int size){
 	int i = 0;
 	int dim = 0;
@@ -78,40 +103,42 @@ SPKDArray init(SPPoint* arr, int size){
 	if (pointIndArray == NULL){
 		return NULL;
 	}
-	for(i=0; i<size; i++){ // allocate space for cols
+	for(i=0; i<size; i++){
 		//pointArray[i]= spPointCopy(arr[i]);
 		pointIndArray[i]= spPointIndCreate(arr[i],i); // copy point array into point-index array
 		assert(dim == spPointGetDimension(arr[i]));// TODO check what happens if the assertion fails
 	}
-	index = (int**) malloc(sizeof(int*)*dim);// TODO verify free this space
+	index = (int**) malloc(dim*sizeof(int*));// TODO verify free this space
 	if (index == NULL){
 		return NULL;
 	}
 	for(i=0; i < dim; i++){  //allocate space
-		index[i] = (int*) malloc(sizeof(int) * size);
+		index[i] = (int*) malloc(size*sizeof(int));
 		if (index[i] == NULL){//TODO if we fail in middle of allocation need to free whats been allocated -destroy
 			return NULL;
 		}
-
-		for(i=0; i <dim; i++){ //runing over the matrix's rows
-			qsort( pointIndArray , size , sizeof(SPPointInd), compare);// comparing the i'th row's SPPointInd->points by the i'th coordinate
-			//chooseCoordinate(i); //TODO SHOSHAN: if we decide to use ben's idea we need to uncomment this and remove the coor++
-			PointIndToIntArray(pointIndArray, size, index[coord]);
-			coord++;    // coord is the coordinate we currently sorting according to
-		}
 	}
-	newKDArray->matrix=index;
-	newKDArray->points = arr;
-	newKDArray->size=size;
-	newKDArray->dim=dim;
-	return newKDArray;
+
+	for(i=0; i <dim; i++){ //runing over the matrix's rows
+		qsort(pointIndArray , size , sizeof(SPPointInd), compare);// comparing the i'th row's SPPointInd->points by the i'th coordinate
+		//chooseCoordinate(i); //TODO SHOSHAN: if we decide to use ben's idea we need to uncomment this and remove the coor++
+		PointIndToIntArray(pointIndArray, size, index[coord]);
+		coord++;    // coord is the coordinate we currently sorting according to
+	}
+
+newKDArray->matrix=index;
+newKDArray->points = arr;
+newKDArray->size=size;
+newKDArray->dim=dim;
+return newKDArray;
 }
 
 int compare (const void * a, const void * b)
 {
 
-	SPPointInd p1 = (SPPointInd)a;// TODO verify if needs to be SPPointInd* instead
-	SPPointInd p2 = (SPPointInd)b;
+	SPPointInd p1 = *(SPPointInd*) a;// TODO verify if needs to be SPPointInd* instead
+	SPPointInd p2 = *(SPPointInd*) b;
+
 	double v1 = 0.0;
 	double v2 = 0.0;
 	v1 = spPointGetAxisCoor(p1->point, coord);
