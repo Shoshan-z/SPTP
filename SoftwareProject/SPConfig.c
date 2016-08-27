@@ -551,6 +551,21 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int i
 }
 
 
+SP_CONFIG_MSG spConfigCreateFeatsPath(char* featsPath, const SPConfig config, int index){
+	//imagePath = malloc(1024 * sizeof(char)); // TODO should do it like that-alocate the space here? ( shoshan)/ remember to free!
+	if (!config || !featsPath){
+			return SP_CONFIG_INVALID_ARGUMENT;
+		}
+	if (index >= config->spNumOfImages){
+			return SP_CONFIG_INDEX_OUT_OF_RANGE;
+		}
+
+	sprintf("%s/%s%d.feats",config->spImagesDirectory, config->spImagesPrefix, index);
+
+	return SP_CONFIG_SUCCESS;
+}
+
+
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
 	//pcaPath = malloc(1024 * sizeof(char)); TODO// should do it like that-alocate the space here? ( shoshan)/ remember to free!
 	if (!config || !pcaPath){

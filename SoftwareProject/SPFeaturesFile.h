@@ -2,9 +2,14 @@
 #define SPFEATURESFILE_H_
 #include "SPPoint.h"
 #include "assert.h"
+#include "SPLogger.h"
 
-void storeFeatures(SPPoint* features, int numOfFeatures, char* imgPrefix, int imgIndex, char*  spImagesDirectory);
+#define FEATS_FILE_ERROR "Invalid features file for image %d"
 
-SPPoint* getFeaturesFromFile(int* numOfFeatures, char* imgPrefix, int imgIndex, char* spImagesDirectory);
+void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex);
+
+SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* featsPath, int imgIndex);
+
+void printFileReadError(int imgIndex);
 
 #endif /* SPFEATURESFILE_H_ */
