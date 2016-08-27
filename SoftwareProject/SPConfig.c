@@ -532,7 +532,6 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg){
 
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int index){
 	//imagePath = malloc(1024 * sizeof(char)); // TODO should do it like that-alocate the space here? ( shoshan)/ remember to free!
-	char indexStr[1024] = {0};
 	if (!config || !imagePath){
 			return SP_CONFIG_INVALID_ARGUMENT;
 		}
@@ -540,13 +539,7 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int i
 			return SP_CONFIG_INDEX_OUT_OF_RANGE;
 		}
 
-	strcat(imagePath, config->spImagesDirectory);
-	strcat(imagePath, "/");
-	strcat(imagePath, config->spImagesPrefix);
-	snprintf(indexStr, 1024,"%d",index);
-	strcat(imagePath, indexStr);
-	strcat(imagePath, config->spImagesSuffix);
-
+	sprintf(imagePath, "%s/%s%d%s",config->spImagesDirectory,config->spImagesPrefix, index, config->spImagesSuffix);
 	return SP_CONFIG_SUCCESS;
 }
 
@@ -560,7 +553,7 @@ SP_CONFIG_MSG spConfigCreateFeatsPath(char* featsPath, const SPConfig config, in
 			return SP_CONFIG_INDEX_OUT_OF_RANGE;
 		}
 
-	sprintf("%s/%s%d.feats",config->spImagesDirectory, config->spImagesPrefix, index);
+	sprintf(featsPath, "%s/%s%d.feats", config->spImagesDirectory, config->spImagesPrefix, index);
 
 	return SP_CONFIG_SUCCESS;
 }

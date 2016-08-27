@@ -4,17 +4,18 @@
 #include <stdbool.h>
 #include <string.h>
 
-void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex) {
+void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
 	FILE* fp = NULL;
 	//char imgName[1024] = {0};
-	int dim = 0;
 	int i = 0;
 	int j =0;
 	double curr = 0;
 
-	//TODO if features is NULL, handle error
-
-	dim = spPointGetDimension(features[0]);
+	//TODO if features is NULL, handle error +logger
+	if (features == NULL) { //LOGGER
+		printf("features is null\n");
+		return;
+	}
 
 	fp = fopen(featsPath, "wb");
 	fwrite(&imgIndex, sizeof(imgIndex), 1, fp);

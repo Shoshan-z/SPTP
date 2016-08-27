@@ -1,13 +1,13 @@
 #this is a comment 
           #this is also a comment
-spImagesDirectory =./images
+spImagesDirectory = C:\Users\DELL\Desktop\images
 spImagesPrefix = img
 spImagesSuffix =      .png
-spNumOfImages = 10
+spNumOfImages = 17
 spPCADimension = 20
 spPCAFilename = pca.yml
 spNumOfFeatures = 100
-spExtractionMode=false
+spExtractionMode= false
 spNumOfSimilarImages=5
 spKDTreeSplitMethod=INCREMENTAL
 spKNN = 21

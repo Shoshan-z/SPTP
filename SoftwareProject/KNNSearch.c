@@ -1,16 +1,5 @@
-/*
- * KNNSearch.c
- *
- *  Created on: Aug 26, 2016
- *      Author: Lilach
- */
-
-
 #include "KNNSearch.h"
 
-SPConfig config;//TODO get this from configuration file?
-int spKNN =config->spKNN;
-SPBPQueue bpq = spBPQueueCreate(spKNN);
 bool isLeaf(KDTreeNode kdTreeNode){
 	if(kdTreeNode==NULL){//LOGGER
 		return NULL;

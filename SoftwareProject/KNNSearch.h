@@ -7,6 +7,8 @@
 
 #include "SPBPriorityQueue.h"
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
 #include "SPConfig.h"
 #include "SPPoint.h"
 #include "KDTree.h"
