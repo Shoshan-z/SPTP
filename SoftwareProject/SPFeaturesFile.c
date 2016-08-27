@@ -66,13 +66,13 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 
 	//read the image index
 	readBytes = fread(&indexFromFile, sizeof(int), 1, fp);
-	if (readBytes != sizeof(int)) {
+	if (readBytes != 1) {
 		goto cleanup;
 	}
 
 	//read number of features
 	readBytes = fread(&currNumOfFeatures, sizeof(int), 1, fp);
-	if (readBytes != sizeof(int)) {
+	if (readBytes != 1) {
 			goto cleanup;
 		}
 
@@ -82,14 +82,11 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 			goto cleanup;
 	}
 
-	memcpy(tmpFeatures, allFeatures,*numOfFeatures*sizeof(SPPoint));
+	memcpy(tmpFeatures, allFeatures,*numOfFeatures*(sizeof(SPPoint)));
 
-
-	//allFeatures is now the bigger array we've just re-allocated
-	//allFeatures = tmpFeatures;
 
 	readBytes = fread(&dim, sizeof(int), 1, fp);
-	if (readBytes != sizeof(int)) {
+	if (readBytes != 1) {
 		goto cleanup;
 		}
 
@@ -102,7 +99,7 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	for (i=*numOfFeatures; i<*numOfFeatures+ currNumOfFeatures; i++){
 		for(j=0; j<dim; j++) {
 			readBytes = fread(coor+j, sizeof(double), 1, fp);
-			if (readBytes != sizeof(double)) {
+			if (readBytes != 1) {
 				goto cleanup;
 			}
 		}

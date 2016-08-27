@@ -1,4 +1,7 @@
 #include "KNNSearch.h"
+#include <stdlib.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 bool isLeaf(KDTreeNode kdTreeNode){
 	if(kdTreeNode==NULL){//LOGGER
@@ -12,10 +15,12 @@ bool isLeaf(KDTreeNode kdTreeNode){
 
 
 
-void kNearestNeighbors( KDTreeNode curr , SPBPQueue bpq, SPPoint point){
+void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	SPListElement element = NULL;
 	double distance =0.0;
 	bool isLeftChosen;
+	SP_BPQUEUE_MSG bpqMsg;
+
 	if(curr == NULL){
 		return;
 	}
@@ -23,24 +28,24 @@ void kNearestNeighbors( KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	 * point is not as good as the points we've seen so far.*/
 	if (isLeaf(curr)){
 		distance =sqrt(spPointL2SquaredDistance(curr->data,point));
-		element= spListElementCreate(spPointGetIndex(curr->data), distance);
-		spBPQueueEnqueue(bpq, element);
+		element = spListElementCreate(spPointGetIndex(curr->data), distance);
+		bpqMsg	= spBPQueueEnqueue(bpq, element);
+		return;
 	}
 
 	/* Recursively search the half of the tree that contains the test point. */
-	if(spPointGetAxisCoor(point,curr->dim) < curr->val){
+	if(spPointGetAxisCoor(point,curr->dim) <= curr->val){
 		isLeftChosen = true;
-		kNearestNeighbors( curr->left , bpq, point);
+		kNearestNeighbors(curr->left , bpq, point);
 	}
 	else{
 		isLeftChosen = false;
-		kNearestNeighbors( curr->right , bpq, point);
+		kNearestNeighbors(curr->right , bpq, point);
 	}
 	/* If the candidate hypersphere crosses this splitting plane, look on the
 	 * other side of the plane by examining the other subtree*/
 
-	if((!spBPQueueIsFull(bpq))|| (curr->val-spPointGetAxisCoor(point,curr->dim) < spBPQueueMaxValue(bpq))){
-
+	if((!spBPQueueIsFull(bpq))|| abs((curr->val-spPointGetAxisCoor(point,curr->dim)) < spBPQueueMaxValue(bpq))){
 
 		//if the if returns true -then recursively search the other subtree on the next axis
 

@@ -176,7 +176,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 	int* map2 = {0};
 	SPPoint* p1 = NULL;
 	SPPoint* p2 = NULL;
-	assert(kdArr != NULL && coor>0 && leftKDArr!=NULL && leftKDArr != NULL);//LOGGER
+	assert(kdArr != NULL && coor>=0 && leftKDArr!=NULL && leftKDArr != NULL);//LOGGER
 	rows= kdArr->dim;
 	size= kdArr->size;
 	middle =(int)(ceil((double)size/2));

@@ -1,16 +1,16 @@
 #this is a comment 
           #this is also a comment
-spImagesDirectory = C:\Users\DELL\Desktop\images
+spImagesDirectory = C:\Users\DELL\Desktop\sp_test\test1images\
 spImagesPrefix = img
-spImagesSuffix =      .png
-spNumOfImages = 17
+spImagesSuffix =      .jpg
+spNumOfImages = 99
 spPCADimension = 20
 spPCAFilename = pca.yml
 spNumOfFeatures = 100
 spExtractionMode= false
 spNumOfSimilarImages=5
-spKDTreeSplitMethod=INCREMENTAL
+spKDTreeSplitMethod=RANDOM
 spKNN = 21
 spMinimalGUI=false
 spLoggerLevel=2
-spLoggerFilename=TodaySucks
+spLoggerFilename= logger

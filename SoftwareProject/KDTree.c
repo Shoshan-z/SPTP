@@ -78,7 +78,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;
 
-return NULL; //TODO not supposed to get here
+return node;
 }
 
 

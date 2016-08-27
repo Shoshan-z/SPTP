@@ -8,10 +8,6 @@ extern "C" {
 	#include "KDTree.h"
 }
 
-//int** matrix;
-//SPPoint* points;
-//int size;
-//int dim;
 
 SPKDArray allocateEmptyKDArray(int dim, int size) {
 	SPKDArray kdArr = NULL;
@@ -97,50 +93,36 @@ int main() {
 		int j=0;
 		SPKDArray leftKDArr;
 		SPKDArray rightKDArr;
-		double point0[2]={1.0,2.0};
-		SPPoint a= spPointCreate(point0, 2, 1);
+		double point0[2]={3.0,7.0};
+		SPPoint a= spPointCreate(point0, 2, 0);
 
-		double point1[2]={123.0,70.0};
+		double point1[2]={8.0,1.0};
 		SPPoint b= spPointCreate(point1, 2, 1);
 
-		double point2[2]={2.0,7.0};
-		SPPoint c= spPointCreate(point2, 2, 1);
+		double point2[2]={6.0,6.0};
+		SPPoint c= spPointCreate(point2, 2, 2);
 
-		double point3[2]={9.0,11.0};
-		SPPoint d= spPointCreate(point3, 2, 1);
+		double point3[2]={2.0,6.0};
+		SPPoint d= spPointCreate(point3, 2, 3);
 
-		double point4[2]={3.0,4.0};
-		SPPoint e= spPointCreate(point4, 2, 1);
+		double point4[2]={1.0,7.0};
+		SPPoint e= spPointCreate(point4, 2, 4);
 
-		SPPoint p[5]={a, b, c, d, e};
+		double point5[2]={8.0,6.0};
+		SPPoint f= spPointCreate(point5, 2, 5);
+
+		double point6[2]={5.0,9.0};
+		SPPoint g= spPointCreate(point6, 2, 6);
+
+
+		SPPoint p[7]={a, b, c, d, e, f, g};
 
 		int** A = NULL;
 
 		A = (int**) malloc(sizeof(int*)*2);
 		for (int i =0; i<2; i++) {
-			A[i] = (int*) malloc(sizeof(int)*5);
+			A[i] = (int*) malloc(sizeof(int)*7);
 		}
-
-		A[0][0] = 0;
-		A[0][1] = 2;
-		A[0][2] = 4;
-		A[0][3] = 3;
-		A[0][4] = 1;
-
-		A[1][0] = 0;
-		A[1][1] = 4;
-		A[1][2] = 2;
-		A[1][3] = 3;
-		A[1][4] = 1;
-
-		SPKDArray big =NULL;
-
-		big=(SPKDArray)malloc(sizeof(struct kdarray));
-		big->points =p;
-		big->matrix = A;
-		big->dim = 2;
-		big->size = 5;
-
 
 		/*
 		int middle = (int)(ceil((double)big->size/2));//TODO add(double)
@@ -169,10 +151,12 @@ int main() {
 					}
 			printf("\n");
 			}
+
 */
 
+		//init the KDArray
 		SPKDArray testInit = NULL;
-		testInit = init(p, 5);
+		testInit = init(p, 7);
 
 		printf("A (TestINIT)\n");
 		for (i=0; i<testInit->dim; i++) {
@@ -182,8 +166,10 @@ int main() {
 			printf("\n");
 			}
 
+	//init the KDTree
 	KDTreeNode testTree = NULL;
 	testTree = initTree(testInit, INCREMENTAL, 0);
 
+	printf("here\n");
 	return 0;
 }

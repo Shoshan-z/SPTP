@@ -17,9 +17,32 @@ extern "C" {
 #define OPEN_CONFIG_EROOR "The configuration file %s couldn’t be open"
 #define OPEN_LOGGER_ERROR "Cannot initialize logger"
 
-int intCompare(const void* a, const void* b) {
-	return ( *(int*)a - *(int*)b );
+struct image_rate_t{
+	int imgIndex;
+	int rate;
+};
+
+typedef struct image_rate_t* imageRate;
+
+
+imageRate imageRateCreate(int imgIndex, int rate){
+
+	imageRate imgR = (imageRate)malloc(sizeof(struct image_rate_t)); ////TODO FREE- Make sure we free this space
+	if (imgR == NULL) {
+		return NULL;
+	}
+	imgR->imgIndex = imgIndex;
+	imgR->rate = rate;
+	return imgR;
 }
+
+int rateCompare(const void* a, const void* b) {
+	imageRate img1 = *(imageRate* )a;
+	imageRate img2 = *(imageRate* )b;
+
+	return (img2->rate - img1->rate );
+}
+
 
 int main(int argc, char** argv) {
 	char configFName[1024] = "spcbir.config";
@@ -39,10 +62,11 @@ int main(int argc, char** argv) {
 	SPKDArray kdArray = NULL;
 	KDTreeNode kdTree = NULL;
 	SPBPQueue bpq = NULL;
-	int* imagesRates = NULL;
+	imageRate* imagesRates = NULL;
 	int QueryNumOfFeats = 0;
 	SPPoint* queryFeatures = NULL;
 	SPListElement currElement = NULL;
+	char queryPath[1024] = {0};
 
 	if (argc == 1) {
 		config = spConfigCreate(configFName, &configMsg);
@@ -80,8 +104,13 @@ int main(int argc, char** argv) {
 	//store the dimension of all points
 	dim = config->spPCADimension;
 
+	imageProc = new sp::ImageProc(config);
+
+	if (imageProc == NULL) {
+		printf("null imageproc\n");
+	}
+
 	if (config->spExtractionMode == true) {
-		imageProc = new sp::ImageProc(config);
 
 		for (i =0; i<spConfigGetNumOfImages(config, &configMsg); i++) {
 			configMsg =  spConfigGetImagePath(imgPath,config,i);
@@ -94,8 +123,6 @@ int main(int argc, char** argv) {
 				}
 			storeFeatures(imgFeatures, featuresPerImage, featsPath, i, dim);
 		}
-	delete imageProc;
-
 	}
 	//TODO if no feature files exist - print error, terminate
 
@@ -105,32 +132,47 @@ int main(int argc, char** argv) {
 	}
 	//TODO check all features - empty, NULL
 
-	printf("Please enter an image path:\n");
-	//scanf();
-
 	kdArray = init(allFeatures, totalFeatures);
 	kdTree = initTree(kdArray, config->spKDTreeSplitMethod, 0);
+	if (kdTree == NULL) {
+		printf("kdArray is null\n");
+	}
+	printf("Please enter an image path:\n");
+	fflush(stdout);
+	scanf("%s", queryPath);
+	fflush(stdin);
+	printf("after scanf\n");
+	queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &QueryNumOfFeats);
+
+
 	bpq = spBPQueueCreate(config->spKNN);
 
-	imagesRates = (int*) calloc(config->spNumOfImages,sizeof(int));
+	imagesRates = (imageRate*) calloc(config->spNumOfImages,sizeof(imageRate));
+
+	//initializing an array of numOfImages images rates which will hold the results
+	for(i=0; i<config->spNumOfImages; i++) {
+		imagesRates[i] = imageRateCreate(i, 0);
+	}
+
 
 	for (i=0; i<QueryNumOfFeats; i++) {
 		kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
 		for (j = 0; j<config->spKNN; j++);
 			currElement = spBPQueuePeek(bpq);
-			imagesRates[spListElementGetIndex(currElement)]+=1;
+			imagesRates[spListElementGetIndex(currElement)]->rate+=1;
 			spBPQueueDequeue(bpq);
 	}
 
-	qsort(imagesRates, config->spNumOfImages, sizeof(int),intCompare);
+	qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
 
 	for (i =0; i<config->spNumOfSimilarImages; i++) {
-		printf("the %d closet image is %d\n",i,  imagesRates[i]);
+		printf("the %d closet image is %d\n",i,  imagesRates[i]->imgIndex);
 	}
 
 
 	spLoggerDestroy();
 	free(imagesRates);
+	delete imageProc;
 	printf("done\n");
 
 	return 0;
