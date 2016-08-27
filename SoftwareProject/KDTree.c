@@ -50,7 +50,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	rightKDArr = allocateKDArray(coordinates, size-middle);
 
 	if (size==1){ // stop criteria
-		returnNode= initLeaf(-1, -1.0, NULL, NULL);// TODO verify what is invalid in val
+		returnNode= initLeaf(-1, INFINITY, NULL, NULL);// TODO verify what is invalid in val
 		SPPoint p = spPointCopy((kdarr->points)[(kdarr->matrix)[0][0]]);
 		returnNode->data= p;//TODO!!! maybe we can directly pass points for it has only one point in it
 		return returnNode;
@@ -72,7 +72,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	}
 	split(kdarr, splitDim, leftKDArr, rightKDArr);
 	node = initEmptyNode();
-	node->dim = coordinates;
+	node->dim = splitDim;
 	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle]], splitDim);// TODO is this what val means? the middle according to the split coordinate
 	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
