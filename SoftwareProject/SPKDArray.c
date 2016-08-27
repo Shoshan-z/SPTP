@@ -26,6 +26,9 @@ void chooseCoordinate(int coordinate){ // TODO SHOSHAN: The change Ben suggested
 }
 
 SPPointInd spPointIndCreate(SPPoint point,int index){
+	if(point == NULL || index<0){
+		return NULL; //LOGGER
+	}
 	SPPointInd pointInd = (SPPointInd)malloc(sizeof(struct sp_pointAndIndex)); ////TODO FREE- Make sure we free this space
 	if (pointInd == NULL) {
 		return NULL;
@@ -34,28 +37,23 @@ SPPointInd spPointIndCreate(SPPoint point,int index){
 	pointInd->index = index;
 	return pointInd;
 }
-SPPointInd spPointIndCopy(SPPointInd source) {
-	assert(source != NULL);
-	SPPointInd copy = spPointIndCreate(source->point,source->index);
-	if (copy == NULL) {
-		return NULL;
-	}
-	return copy;
-}
+//SPPointInd spPointIndCopy(SPPointInd source) {
+//	assert(source != NULL);
+//	SPPointInd copy = spPointIndCreate(source->point,source->index);
+//	if (copy == NULL) {
+//		return NULL;
+//	}
+//	return copy;
+//}
 
-//void copyPointArray(SPPoint* source, int size, SPPoint* target){
+//void copyPointIndArray(SPPointInd* source, int size, SPPointInd* target){
 //	int i=0;
 //	for(i=0; i<size; i++){
-//			target[i]= spPointCopy(source[i]);
-//		}
+//		target[i]= spPointIndCopy(source[i]);
+//	}
 //}
-void copyPointIndArray(SPPointInd* source, int size, SPPointInd* target){
-	int i=0;
-	for(i=0; i<size; i++){
-		target[i]= spPointIndCopy(source[i]);
-	}
-}
 void PointIndToIntArray(SPPointInd* source, int size, int* target){
+	assert(source!= NULL && target!=NULL && size>=0);//LOGGER + size>0 or 1?
 	int i=0;
 	for(i=0; i<size; i++){
 		target[i]= source[i]->index;
@@ -66,6 +64,9 @@ SPKDArray allocateKDArray(int dim, int size){
 	SPKDArray KDArr = NULL;
 	int** matrix = NULL;
 	int i = 0;
+	if(dim<0 || size<0){//LOGGER
+		return NULL;
+	}
 
 	KDArr = (SPKDArray)malloc(sizeof(struct kdarray));
 	if(KDArr ==NULL){
@@ -175,6 +176,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 	int* map2 = {0};
 	SPPoint* p1 = NULL;
 	SPPoint* p2 = NULL;
+	assert(kdArr != NULL && coor>0 && leftKDArr!=NULL && leftKDArr != NULL);//LOGGER
 	rows= kdArr->dim;
 	size= kdArr->size;
 	middle =(int)(ceil((double)size/2));

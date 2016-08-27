@@ -12,6 +12,9 @@ SPConfig config;//TODO get this from configuration file?
 int spKNN =config->spKNN;
 SPBPQueue bpq = spBPQueueCreate(spKNN);
 bool isLeaf(KDTreeNode kdTreeNode){
+	if(kdTreeNode==NULL){//LOGGER
+		return NULL;
+	}
 	if(kdTreeNode->data == NULL){
 		return false;
 	}
@@ -19,7 +22,7 @@ bool isLeaf(KDTreeNode kdTreeNode){
 }
 
 
-//This function finds the K nearest neighbors of the test point point:
+
 void kNearestNeighbors( KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	SPListElement element = NULL;
 	double distance =0.0;
