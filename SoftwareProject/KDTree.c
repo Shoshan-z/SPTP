@@ -51,7 +51,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 
 	if (size==1){ // stop criteria
 		returnNode= initLeaf(-1, INFINITY, NULL, NULL);// TODO verify what is invalid in val
-		SPPoint p = spPointCopy((kdarr->points)[(kdarr->matrix)[0][0]]);
+		SPPoint p = spPointCopy((kdarr->points)[0]);
 		returnNode->data= p;//TODO!!! maybe we can directly pass points for it has only one point in it
 		return returnNode;
 	}
@@ -64,7 +64,6 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 		random = rand()%coordinates;// random int between 0 and last coordinates index
 		splitDim = random;
 	}
-
 	if(spKDTreeSplitMethod == INCREMENTAL){
 		inc= (incrementingDimension)%coordinates;
 		//TODO incrementing dim?need to send with 0 at first
@@ -73,7 +72,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	split(kdarr, splitDim, leftKDArr, rightKDArr);
 	node = initEmptyNode();
 	node->dim = splitDim;
-	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle]], splitDim);// TODO is this what val means? the middle according to the split coordinate
+	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle-1]], splitDim);// TODO is this what val means? the middle according to the split coordinate
 	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;
@@ -109,19 +108,23 @@ KDTreeNode initEmptyNode(){// ~~ SPKDTree
 }
 
 
-int findMaxSpread(SPKDArray kdArr){//, int size){
-	int min = 0;
-	int max = 0;
+int findMaxSpread(SPKDArray kdArr){
+	double min = 0.0;
+	double max = 0.0;
 	int i = 0;
 	int size=0;
-	int maxSpread = 0;
+	double maxSpread = 0.0;
 	int spreadDim = 0;// the dimension we'll spread according to (i.e x=0, y=1 etc)
-	int* spreadByDim = NULL;//array of spread of each dim
+	double* spreadByDim = NULL;//array of spread of each dim
 	int coordinates = kdArr->dim;// =num of rows = num of coordinates in each point
 	int cols;//=number of cols = number of different points
+
 	size=kdArr->size;
 	cols=size;
-	spreadByDim = (int*)malloc(coordinates*sizeof(int));
+	spreadByDim = (double*)malloc(coordinates*sizeof(double));
+	if (spreadByDim == NULL){//TODO print to logger!! terminate program?
+		return -1;
+	}
 
 	for(i=0; i<coordinates; i++){
 		max = spPointGetAxisCoor((kdArr->points)[(kdArr->matrix)[i][cols-1]],i);
@@ -130,10 +133,12 @@ int findMaxSpread(SPKDArray kdArr){//, int size){
 	}
 	maxSpread = spreadByDim[0];
 	for(i=1; i<coordinates; i++){// find the first coordinate with the max spread
-		if( spreadByDim[i]> maxSpread){
+		if(spreadByDim[i]> maxSpread){
 			spreadDim  =  i;
 		}
 	}
+	free(spreadByDim);
+
 	return spreadDim;
 }
 

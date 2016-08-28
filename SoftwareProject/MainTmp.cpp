@@ -40,7 +40,16 @@ int rateCompare(const void* a, const void* b) {
 	imageRate img1 = *(imageRate* )a;
 	imageRate img2 = *(imageRate* )b;
 
-	return (img2->rate - img1->rate );
+	if ((img2->rate - img1->rate)>0) {
+		return 1;
+	}
+	else if (img2->rate - img1->rate <0){
+		return -1;
+	}
+	else { //if the rate is equal, the image with the smaller index should be returned
+		return (img1->imgIndex - img2->imgIndex);
+	}
+
 }
 
 
@@ -141,7 +150,6 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 	scanf("%s", queryPath);
 	fflush(stdin);
-	printf("after scanf\n");
 	queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &QueryNumOfFeats);
 
 
@@ -154,13 +162,15 @@ int main(int argc, char** argv) {
 		imagesRates[i] = imageRateCreate(i, 0);
 	}
 
+	printf("query num of features is %d\n",QueryNumOfFeats);
 
 	for (i=0; i<QueryNumOfFeats; i++) {
 		kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
-		for (j = 0; j<config->spKNN; j++);
+		for (j = 0; j<config->spKNN; j++){
 			currElement = spBPQueuePeek(bpq);
 			imagesRates[spListElementGetIndex(currElement)]->rate+=1;
 			spBPQueueDequeue(bpq);
+		}
 	}
 
 	qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
@@ -169,9 +179,13 @@ int main(int argc, char** argv) {
 		printf("the %d closet image is %d\n",i,  imagesRates[i]->imgIndex);
 	}
 
+	//free image rates
+	for (i =0; i<config->spNumOfSimilarImages; i++) {
+		free(imagesRates[i]);
+	}
+	free(imagesRates);
 
 	spLoggerDestroy();
-	free(imagesRates);
 	delete imageProc;
 	printf("done\n");
 

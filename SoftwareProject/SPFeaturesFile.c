@@ -6,34 +6,51 @@
 
 void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
 	FILE* fp = NULL;
-	//char imgName[1024] = {0};
 	int i = 0;
 	int j =0;
 	double curr = 0;
+	int writtenElemnts = 0;
+	bool success = false;
+	char errorString[1024] = {0};
 
-	//TODO if features is NULL, handle error +logger
-	if (features == NULL) { //LOGGER
-		printf("features is null\n");
-		return;
+	if (features == NULL ||numOfFeatures ==0 ||featsPath == NULL ) { //LOGGER
+		goto cleanup;
 	}
 
 	fp = fopen(featsPath, "wb");
-	fwrite(&imgIndex, sizeof(imgIndex), 1, fp);
-	fwrite(&numOfFeatures, sizeof(numOfFeatures), 1, fp);
-	fwrite(&dim, sizeof(int), 1, fp);
+	if (fp == NULL) {
+		goto cleanup;
+	}
+
+	//write to the file the image index, number of features and dimension
+	writtenElemnts = fwrite(&imgIndex, sizeof(imgIndex), 1, fp);
+	writtenElemnts = fwrite(&numOfFeatures, sizeof(numOfFeatures), 1, fp);
+	writtenElemnts= fwrite(&dim, sizeof(int), 1, fp);
+	if (writtenElemnts != 1) {
+		goto cleanup;
+	}
 
 	for (i=0; i<numOfFeatures; i++) {
 		for (j=0; j<dim; j++) {
 			curr = spPointGetAxisCoor(features[i], j);
 			fwrite(&curr, sizeof(double),1, fp);
+			if (writtenElemnts != 1) {
+					goto cleanup;
+				}
 		}
 	}
-
-	fclose(fp);
+	success = true;
+cleanup:
+	if (fp!= NULL) {
+		fclose(fp);
+	}
+	if (!success){
+		sprintf(errorString, WRITE_FAIL, imgIndex);
+		spLoggerPrintWarning(errorString,__FILE__, __func__, __LINE__);
+	}
 }
 
 
-//numOfFeatures will hold the number of features extracted from the file
 SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* featsPath, int imgIndex) {
 	SPPoint tmpPoint = NULL;
 	SPPoint* tmpFeatures = NULL;
@@ -48,6 +65,10 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	int readBytes = 0; //will hold the bytes which were currently read
 	char errorString[1024] = {0};
 	bool success = false;
+
+	if (featsPath == NULL){
+		goto cleanup;
+	}
 
 	fp = fopen(featsPath, "rb");
 	if (fp == NULL){ //couldn't open the file

@@ -1,0 +1,12 @@
+done on 28/08:  (Shoshan)
+-changed what you sent me on whatsapp
+
+-fixed final for loop im main
+
+-changed "spreadByDimArray" in find MaxSpread to a double array (coordinates are doubles)
+
+-changed node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle]], splitDim)
+ to node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle-1]], splitDim) 
+ since kdArr->points starts with zero and middle is size and not index
+
+ -added documentaion to featuresFile.h, and error handling 

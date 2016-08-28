@@ -45,18 +45,18 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	/* If the candidate hypersphere crosses this splitting plane, look on the
 	 * other side of the plane by examining the other subtree*/
 
-	if((!spBPQueueIsFull(bpq))|| abs((curr->val-spPointGetAxisCoor(point,curr->dim)) < spBPQueueMaxValue(bpq))){
+	if((!spBPQueueIsFull(bpq))|| abs(curr->val-spPointGetAxisCoor(point,curr->dim)) < spBPQueueMaxValue(bpq)){
 
 		//if the if returns true -then recursively search the other subtree on the next axis
 
 		if(isLeftChosen){
 			if (curr->right != NULL){//??? is this the case Moab talks about when we shouldn't search the other side?
-				kNearestNeighbors( curr->right ,bpq , point);
+				kNearestNeighbors(curr->right ,bpq , point);
 			}
 		}
 		else{
 			if (curr->left != NULL){
-				kNearestNeighbors( curr->left , bpq, point);
+				kNearestNeighbors(curr->left , bpq, point);
 			}
 		}
 	}

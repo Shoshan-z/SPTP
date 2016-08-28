@@ -3,13 +3,13 @@
 spImagesDirectory = C:\Users\DELL\Desktop\sp_test\test1images\
 spImagesPrefix = img
 spImagesSuffix =      .jpg
-spNumOfImages = 99
+spNumOfImages = 100
 spPCADimension = 20
 spPCAFilename = pca.yml
 spNumOfFeatures = 100
 spExtractionMode= false
 spNumOfSimilarImages=5
-spKDTreeSplitMethod=RANDOM
+spKDTreeSplitMethod=MAX_SPREAD
 spKNN = 21
 spMinimalGUI=false
 spLoggerLevel=2

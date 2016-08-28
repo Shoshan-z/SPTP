@@ -1,3 +1,0 @@
-V- go over the struct in the end and check if there are parameters with no default value which are not set
-V- finish the "printError" function
-V-check the case where there are spaces in the middle of the parameter value
