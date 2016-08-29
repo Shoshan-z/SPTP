@@ -87,18 +87,43 @@ SPKDArray allocateKDArray(int dim, int size){
 	return KDArr;
 }
 
+void destroyKDArray(SPKDArray kdArr) {
+	int dim = 0;
+	int size = 0;
+	int i =0;
+
+	if (kdArr == NULL) {
+		return;
+	}
+
+	dim = kdArr->dim;
+	size = kdArr->size;
+
+	//free the matrix
+	for(i=0; i<dim; i++){
+		free(kdArr->matrix[i]);
+	}
+	free(kdArr->matrix);
+
+	//destroy all points
+	for (i=0; i<size; i++){
+		spPointDestroy(kdArr->points[i]);
+	}
+	free(kdArr);
+}
 
 SPKDArray init(SPPoint* arr, int size){
 	int i = 0;
 	int dim = 0;
 	SPKDArray newKDArray=NULL;
-	int** index;
+	int** index = NULL;
+	SPPointInd* pointIndArray =NULL;
+
 	if (arr == NULL || size <=0){
 		return NULL; //TODO check if need to print something to logger and if it should return null
 	}
 	newKDArray = (SPKDArray)malloc(sizeof(struct kdarray));
 
-	SPPointInd* pointIndArray =NULL;
 	dim = spPointGetDimension(arr[0]);
 	pointIndArray = (SPPointInd*) malloc(sizeof(SPPointInd) * size);
 	if (pointIndArray == NULL){
@@ -176,10 +201,13 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 	int* map2 = {0};
 	SPPoint* p1 = NULL;
 	SPPoint* p2 = NULL;
+
 	assert(kdArr != NULL && coor>=0 && leftKDArr!=NULL && leftKDArr != NULL);//LOGGER
+
 	rows= kdArr->dim;
 	size= kdArr->size;
 	middle =(int)(ceil((double)size/2));
+
 	p1 = (SPPoint*)malloc(sizeof(SPPoint)*middle);
 	p2 = (SPPoint*)malloc(sizeof(SPPoint)*(size-middle));
 	LRArray = (int*)malloc(sizeof(int)*size);//SHOSHAN: =the X array, dynamically allocated because size is defined only in runtime
@@ -234,11 +262,11 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 		for (j=0; j<size; j++){
 			indexInOrigin=(kdArr->matrix)[i][j];
 			if (LRArray[indexInOrigin] == 0){ //X array in doc
-				(leftKDArr->matrix)[i][l]= map1[(kdArr->matrix)[i][j]];
+				(leftKDArr->matrix)[i][l]= map1[(kdArr->matrix)[i][j]]; //the index of the point in p1
 				l++;
 			}
 			else if(LRArray[indexInOrigin]==1){
-				(rightKDArr->matrix)[i][r]= map2[(kdArr->matrix)[i][j]];
+				(rightKDArr->matrix)[i][r]= map2[(kdArr->matrix)[i][j]]; //the index of the point in p2
 				r++;
 			}
 		}

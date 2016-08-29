@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define ALLOC_ERROR_MSG "Allocation error"
+
 void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
 	FILE* fp = NULL;
 	int i = 0;

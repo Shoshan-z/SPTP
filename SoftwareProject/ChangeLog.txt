@@ -10,3 +10,7 @@ done on 28/08:  (Shoshan)
  since kdArr->points starts with zero and middle is size and not index
 
  -added documentaion to featuresFile.h, and error handling 
+ 
+Shoshan 29/08: 
+ - adeed a "KDArrayDestroy" function
+ - added some logger prints to main
