@@ -24,6 +24,10 @@ extern "C" {
 #define NO_FEATURES_EXTRACTED_ERROR "No features were extracted"
 #define ALLOC_ERROR_MSG "Allocation error"
 #define MINIMAL_GUI_NOT_SET_WARNING "Cannot display images in non-Minimal-GUI mode"
+#define KD_ARRAY_ERROR "Could not create KDArray"
+#define KD_TREE_ERROR "Could not create KDTree"
+#define QUERY_PATH_ERROR "Could not open query image"
+#define BPQ_ERROR "Could not create BPQueue"
 
 struct image_rate_t{
 	int imgIndex;
@@ -32,7 +36,8 @@ struct image_rate_t{
 
 typedef struct image_rate_t* imageRate;
 
-
+//TODO add info printing!!!
+//TODO add "loop cleanup"
 imageRate imageRateCreate(int imgIndex, int rate){
 
 	imageRate imgR = (imageRate)malloc(sizeof(struct image_rate_t));
@@ -57,7 +62,14 @@ int rateCompare(const void* a, const void* b) {
 	else { //if the rate is equal, the image with the smaller index should be returned
 		return (img1->imgIndex - img2->imgIndex);
 	}
+}
 
+void freePointsArray(SPPoint* points, int size) {
+	int i = 0;
+	for (i=0; i<size; i++) {
+		spPointDestroy(points[i]);
+	}
+	free(points);
 }
 
 
@@ -151,9 +163,15 @@ int main(int argc, char** argv) {
 			imgFeatures = imageProc->getImageFeatures(imgPath, i, &featuresPerImage);
 			if (imgFeatures == NULL) {
 				loggerMsg = spLoggerPrintWarning(FEATURES_WARNING,__FILE__, __func__, __LINE__);
+				continue;
 				}
-			storeFeatures(imgFeatures, featuresPerImage, featsPath, i, dim);
-			filesStored++;
+			if (storeFeatures(imgFeatures, featuresPerImage, featsPath, i, dim)== true) {
+				filesStored++;
+			}
+			if (imgFeatures != NULL) {
+				freePointsArray(imgFeatures, featuresPerImage);
+			}
+
 		}
 		if (filesStored == 0) {
 			spLoggerPrintError(FEATURES_ERROR,__FILE__, __func__, __LINE__);
@@ -176,37 +194,49 @@ int main(int argc, char** argv) {
 		goto cleanup;
 	}
 
-	//TODO errors and looger are set up to this point in main
 	kdArray = init(allFeatures, totalFeatures);
-	kdTree = initTree(kdArray, config->spKDTreeSplitMethod, 0);
-	if (kdTree == NULL) {
-		printf("kdAtree is null\n");
+	if (kdArray == NULL){
+		spLoggerPrintError(KD_ARRAY_ERROR, __FILE__, __func__, __LINE__);
+		goto cleanup;
 	}
 
-	printf("Please enter an image path:\n");
-	fflush(stdout);
-	scanf("%s", queryPath);
-	fflush(stdin);
+	kdTree = initTree(kdArray, config->spKDTreeSplitMethod, 0);
+	if (kdTree == NULL) {
+		spLoggerPrintError(KD_TREE_ERROR, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
 
 	while (strcmp(queryPath, "<>")!=0 ) {
+		printf("Please enter an image path:\n");
+		fflush(stdout);
+		scanf("%s", queryPath);
+		fflush(stdin);
+
+		if (strcmp(queryPath, "<>")==0) {
+			break;
+		}
 		queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &queryNumOfFeats);
 		if (queryFeatures == NULL){
-			//handle error
+			spLoggerPrintError(QUERY_PATH_ERROR, __FILE__, __func__, __LINE__);
+			goto cleanup;
 		}
 
 		bpq = spBPQueueCreate(config->spKNN);
 		if (bpq == NULL) {
-			//handle error
+			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
+			goto cleanup;
 		}
 		imagesRates = (imageRate*) calloc(config->spNumOfImages,sizeof(imageRate));
 		if (imagesRates == NULL) {
-			//handle error
+			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+			goto cleanup;
 		}
 		//initializing an array of numOfImages images rates which will hold the results
 		for(i=0; i<config->spNumOfImages; i++) {
 			imagesRates[i] = imageRateCreate(i, 0);
 		}
 
+		//counting the number of "hits" per image
 		for (i=0; i<queryNumOfFeats; i++) {
 			kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
 			for (j = 0; j<config->spKNN; j++){
@@ -216,14 +246,22 @@ int main(int argc, char** argv) {
 			}
 		}
 
+		//free the queue and the query features
+		if (bpq != NULL){
+			spBPQueueDestroy(bpq);
+		}
+		if (queryFeatures != NULL) {
+			freePointsArray(queryFeatures, queryNumOfFeats);
+		}
+
 		qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
 
+		//display the results
 		minGui = spConfigMinimalGui(config, &configMsg);
 		if (configMsg != SP_CONFIG_SUCCESS) {
 			loggerMsg = spLoggerPrintWarning(MINIMAL_GUI_NOT_SET_WARNING,__FILE__, __func__, __LINE__);
 		}
 
-		//display the results
 		for (i=0; i<config->spNumOfSimilarImages; i++) {
 			configMsg =  spConfigGetImagePath(imgPath,config,imagesRates[i]->imgIndex);
 			if (configMsg != SP_CONFIG_SUCCESS) {
@@ -239,31 +277,30 @@ int main(int argc, char** argv) {
 				printf("%s\n", imgPath);
 			}
 		}
-		printf("Please enter an image path:\n");
-		fflush(stdout);
-		scanf("%s", queryPath);
-		fflush(stdin);
 	}
 
 	printf("Exiting…\n");
 	success = true;
 
 cleanup:
+	if (config!= NULL) {
+		spConfigDestroy(config);
+	}
 	if (allFeatures != NULL){
-		for (i=0; i<totalFeatures; i++){
-			spPointDestroy(allFeatures[i]);
-		}
-		free(allFeatures);
+		freePointsArray(allFeatures, totalFeatures);
 	}
-	if (queryFeatures != NULL) {
-		for (i=0; i<queryNumOfFeats; i++) {
-			spPointDestroy(queryFeatures[i]);
-		}
-		free(queryFeatures);
-	}
+
 	if (kdArray != NULL) {
 		SPKDArrayDestroy(kdArray);
 	}
+
+	if (queryFeatures != NULL){ //TODO check if need to also be freed here
+		//freePointsArray(allFeatures, totalFeatures);
+	}
+
+	if (bpq != NULL){ //TODO check if need to also be freed here
+		spBPQueueDestroy(bpq);
+		}
 	//free image rates
 	if (imagesRates != NULL) {
 		for (i =0; i<config->spNumOfSimilarImages; i++) {
@@ -271,19 +308,17 @@ cleanup:
 		}
 		free(imagesRates);
 	}
-	if (config!= NULL) {
-		spConfigDestroy(config);
-	}
 	if (imageProc != NULL) {
 		delete imageProc;
 	}
-	if (bpq != NULL){
-		spBPQueueDestroy(bpq);
+
+	if (kdTree != NULL){
+		KDTreeDestroy(kdTree);
 	}
 	spLoggerDestroy();
 
-
 	if (!success) {
+		printf("An error occurred, see log file for details\n");
 		return -1;
 	}
 	return 0;

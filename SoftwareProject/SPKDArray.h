@@ -31,8 +31,6 @@ typedef struct kdarray* SPKDArray;
 /**A global variable holding an int that represents a coordinate*/
 extern int coor;
 
-void chooseCoordinate(int coordinate); //TODO check if we want to use it
-
 
 /**
  * Allocates a new pointInd in the memory.

@@ -1,12 +1,13 @@
 #include "SPFeaturesFile.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 
 #define ALLOC_ERROR_MSG "Allocation error"
+#define FEATS_FILE_ERROR "Invalid features file for image %d"
+#define WRITE_FAIL "Could not create file for image %d"
 
-void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
+bool storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
 	FILE* fp = NULL;
 	int i = 0;
 	int j =0;
@@ -42,6 +43,7 @@ void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int im
 		}
 	}
 	success = true;
+
 cleanup:
 	if (fp!= NULL) {
 		fclose(fp);
@@ -50,6 +52,8 @@ cleanup:
 		sprintf(errorString, WRITE_FAIL, imgIndex);
 		spLoggerPrintWarning(errorString,__FILE__, __func__, __LINE__);
 	}
+
+	return success;
 }
 
 

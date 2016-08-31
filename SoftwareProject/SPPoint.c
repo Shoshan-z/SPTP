@@ -76,6 +76,7 @@ double spPointL2SquaredDistance(SPPoint p, SPPoint q){
 	double distance = 0.0;
 	double tmpDistance;
 	assert(p!=NULL && q!=NULL && p->dim == q->dim);
+
 	for (i=0; i<p->dim; i++) {
 		tmpDistance = p->coordinates[i] - q->coordinates[i];
 		distance += tmpDistance*tmpDistance;

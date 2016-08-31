@@ -47,7 +47,13 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 
 
 	leftKDArr = allocateKDArray(coordinates, middle);
+	if (leftKDArr == NULL){
+		//TODO handle error
+	}
 	rightKDArr = allocateKDArray(coordinates, size-middle);
+	if (rightKDArr == NULL){
+		//TODO handle error
+	}
 
 	if (size==1){ // stop criteria
 		returnNode= initLeaf(-1, INFINITY, NULL, NULL);// TODO verify what is invalid in val
@@ -77,10 +83,22 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;
 
+	//free the old kd array
+	SPKDArrayDestroy(leftKDArr);
+	SPKDArrayDestroy(rightKDArr);
+
 return node;
 }
 
+void KDTreeDestroy(KDTreeNode kdTree) {
+	if (kdTree == NULL) {
+		return;
+	}
+	KDTreeDestroy(kdTree->right);
+	KDTreeDestroy(kdTree->left);
 
+	free(kdTree);
+}
 
 KDTreeNode initLeaf(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~SPKDTree
 		KDTreeNode newNode=NULL;

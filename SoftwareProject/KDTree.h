@@ -66,5 +66,13 @@ KDTreeNode initEmptyNode();
 int findMaxSpread(SPKDArray kdArr);
 
 
+/**
+ * this function recursively free all the nodes in the KDTree
+ * @param- KDTreeNode kdTree the KDTree to be freed
+ *
+ * if the kdTree is NULL nothing happens
+ */
+void KDTreeDestroy(KDTreeNode kdTree);
+
 
 #endif /* KDTREE_H_ */

@@ -3,10 +3,7 @@
 #include "SPPoint.h"
 #include "assert.h"
 #include "SPLogger.h"
-
-#define FEATS_FILE_ERROR "Invalid features file for image %d"
-#define WRITE_FAIL "Could not create file for image %d"
-
+#include <stdbool.h>
 
 /*
  * Saves the features of each image to the relevant .feats file
@@ -17,13 +14,15 @@
  * @param imgindex - the index of the relevant image
  * @param dim - the dimension of all the features of the image
  *
+ * @return true if the features were stored to the file, false otherwise
+ *
  * A warning is printed if:
  * 	-features is NULL
  * 	-numOfFeatires is zero
  * 	-featsPath is NULL
  * 	-an error occurred when writing to the file
  */
-void storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim);
+bool storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim);
 
 
 /*
