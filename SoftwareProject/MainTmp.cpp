@@ -23,7 +23,7 @@ extern "C" {
 #define FEATURES_ERROR "No features files created"
 #define NO_FEATURES_EXTRACTED_ERROR "No features were extracted"
 #define ALLOC_ERROR_MSG "Allocation error"
-
+#define MINIMAL_GUI_NOT_SET_WARNING "Cannot display images in non-Minimal-GUI mode"
 
 struct image_rate_t{
 	int imgIndex;
@@ -80,13 +80,15 @@ int main(int argc, char** argv) {
 	KDTreeNode kdTree = NULL;
 	SPBPQueue bpq = NULL;
 	imageRate* imagesRates = NULL;
-	int QueryNumOfFeats = 0;
+	int queryNumOfFeats = 0;
 	SPPoint* queryFeatures = NULL;
 	SPListElement currElement = NULL;
 	char queryPath[1024] = {0};
 	int filesStored = 0; //will hold the number of features file successfully stored
 	bool extractMode = false;
+	bool minGui = false;
 	bool success = false;
+
 
 	if (argc == 1) {
 		config = spConfigCreate(configFName, &configMsg);
@@ -180,51 +182,103 @@ int main(int argc, char** argv) {
 	if (kdTree == NULL) {
 		printf("kdAtree is null\n");
 	}
+
 	printf("Please enter an image path:\n");
 	fflush(stdout);
 	scanf("%s", queryPath);
 	fflush(stdin);
-	queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &QueryNumOfFeats);
 
-
-	bpq = spBPQueueCreate(config->spKNN);
-
-	imagesRates = (imageRate*) calloc(config->spNumOfImages,sizeof(imageRate));
-
-	//initializing an array of numOfImages images rates which will hold the results
-	for(i=0; i<config->spNumOfImages; i++) {
-		imagesRates[i] = imageRateCreate(i, 0);
-	}
-
-	for (i=0; i<QueryNumOfFeats; i++) {
-		kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
-		for (j = 0; j<config->spKNN; j++){
-			currElement = spBPQueuePeek(bpq);
-			imagesRates[spListElementGetIndex(currElement)]->rate+=1;
-			spBPQueueDequeue(bpq);
+	while (strcmp(queryPath, "<>")!=0 ) {
+		queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &queryNumOfFeats);
+		if (queryFeatures == NULL){
+			//handle error
 		}
+
+		bpq = spBPQueueCreate(config->spKNN);
+		if (bpq == NULL) {
+			//handle error
+		}
+		imagesRates = (imageRate*) calloc(config->spNumOfImages,sizeof(imageRate));
+		if (imagesRates == NULL) {
+			//handle error
+		}
+		//initializing an array of numOfImages images rates which will hold the results
+		for(i=0; i<config->spNumOfImages; i++) {
+			imagesRates[i] = imageRateCreate(i, 0);
+		}
+
+		for (i=0; i<queryNumOfFeats; i++) {
+			kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
+			for (j = 0; j<config->spKNN; j++){
+				currElement = spBPQueuePeek(bpq);
+				imagesRates[spListElementGetIndex(currElement)]->rate+=1;
+				spBPQueueDequeue(bpq);
+			}
+		}
+
+		qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
+
+		minGui = spConfigMinimalGui(config, &configMsg);
+		if (configMsg != SP_CONFIG_SUCCESS) {
+			loggerMsg = spLoggerPrintWarning(MINIMAL_GUI_NOT_SET_WARNING,__FILE__, __func__, __LINE__);
+		}
+
+		//display the results
+		for (i=0; i<config->spNumOfSimilarImages; i++) {
+			configMsg =  spConfigGetImagePath(imgPath,config,imagesRates[i]->imgIndex);
+			if (configMsg != SP_CONFIG_SUCCESS) {
+				spLoggerPrintWarning(IMAGE_PATH_WARNING, __FILE__, __func__, __LINE__);
+				continue;
+			}
+			if (minGui) {
+				imageProc->showImage(imgPath);
+			} else {
+				if (i==0) {
+					printf("Best candidates for - %s - are:\n", queryPath);
+				}
+				printf("%s\n", imgPath);
+			}
+		}
+		printf("Please enter an image path:\n");
+		fflush(stdout);
+		scanf("%s", queryPath);
+		fflush(stdin);
 	}
 
-	printf("breakpoint before qsort\n");
-	qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
-
-	for (i =0; i<config->spNumOfSimilarImages; i++) {
-		printf("the %d closet image is %d\n",i,  imagesRates[i]->imgIndex);
-	}
-
-	//free image rates
-	for (i =0; i<config->spNumOfSimilarImages; i++) {
-		free(imagesRates[i]);
-	}
-	free(imagesRates);
+	printf("Exiting…\n");
 	success = true;
 
 cleanup:
+	if (allFeatures != NULL){
+		for (i=0; i<totalFeatures; i++){
+			spPointDestroy(allFeatures[i]);
+		}
+		free(allFeatures);
+	}
+	if (queryFeatures != NULL) {
+		for (i=0; i<queryNumOfFeats; i++) {
+			spPointDestroy(queryFeatures[i]);
+		}
+		free(queryFeatures);
+	}
+	if (kdArray != NULL) {
+		SPKDArrayDestroy(kdArray);
+	}
+	//free image rates
+	if (imagesRates != NULL) {
+		for (i =0; i<config->spNumOfSimilarImages; i++) {
+			free(imagesRates[i]);
+		}
+		free(imagesRates);
+	}
 	if (config!= NULL) {
 		spConfigDestroy(config);
 	}
 	if (imageProc != NULL) {
 		delete imageProc;
+	}
+	if (bpq != NULL){
+		spBPQueueDestroy(bpq);
 	}
 	spLoggerDestroy();
 
@@ -232,8 +286,5 @@ cleanup:
 	if (!success) {
 		return -1;
 	}
-	printf("done\n");
-
 	return 0;
-
 }

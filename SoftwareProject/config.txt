@@ -1,16 +1,17 @@
-#this is a comment 
-          #this is also a comment
-spImagesDirectory = C:\Users\DELL\Desktop\sp_test\test1images\
+spImagesDirectory = C:\Users\DELL\Desktop\sp_test\test1images
 spImagesPrefix = img
-spImagesSuffix =      .jpg
+spImagesSuffix = .jpg
 spNumOfImages = 100
-spPCADimension = 20
+
 spPCAFilename = pca.yml
+spPCADimension = 28
 spNumOfFeatures = 100
-spExtractionMode= false
-spNumOfSimilarImages=5
-spKDTreeSplitMethod=MAX_SPREAD
-spKNN = 5
-spMinimalGUI=false
-spLoggerLevel=2
-spLoggerFilename= logger
+spExtractionMode = false
+
+spNumOfSimilarImages = 5
+spKDTreeSplitMethod = RANDOM
+spKNN = 10
+
+spMinimalGUI = false
+spLoggerFilename = test1.log
+spLoggerLevel = 2

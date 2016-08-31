@@ -93,7 +93,7 @@ int compare (const void * a, const void * b);
 
 /**
  * Given aKDArray kdArr, a coordinate coor and  two kd-arrays pointers leftKDArr,rightKDArr-
- * This function stores in leftKDArr  the ⌈𝒏/𝟐⌉ points with respect to the coordinate coor
+ * This function stores in leftKDArr  the ג�ˆנ�’�/נ���ג�‰ points with respect to the coordinate coor
  * and the data related such as matrix of these points,the dim of the split, val of median at that coor
  * and the rest of the points so as their related data in rightKDArr.
  * @param kdArr- the KDArray to be split
@@ -103,6 +103,6 @@ int compare (const void * a, const void * b);
  */
 void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr);//, SPPoint* pointArray);
 
-
+void SPKDArrayDestroy(SPKDArray kdArr);
 
 #endif /* SPKDARRAY_H_ */

@@ -13,6 +13,11 @@ bool isEmpty(char* str) {
 	if (str[0] == '\0') {
 		return true;
 	}
+
+	if (str[0] == '\n') {
+		return true;
+	}
+
 	return false;
 }
 

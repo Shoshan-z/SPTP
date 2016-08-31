@@ -37,21 +37,7 @@ SPPointInd spPointIndCreate(SPPoint point,int index){
 	pointInd->index = index;
 	return pointInd;
 }
-//SPPointInd spPointIndCopy(SPPointInd source) {
-//	assert(source != NULL);
-//	SPPointInd copy = spPointIndCreate(source->point,source->index);
-//	if (copy == NULL) {
-//		return NULL;
-//	}
-//	return copy;
-//}
 
-//void copyPointIndArray(SPPointInd* source, int size, SPPointInd* target){
-//	int i=0;
-//	for(i=0; i<size; i++){
-//		target[i]= spPointIndCopy(source[i]);
-//	}
-//}
 void PointIndToIntArray(SPPointInd* source, int size, int* target){
 	assert(source!= NULL && target!=NULL && size>=0);//LOGGER + size>0 or 1?
 	int i=0;
@@ -87,7 +73,7 @@ SPKDArray allocateKDArray(int dim, int size){
 	return KDArr;
 }
 
-void destroyKDArray(SPKDArray kdArr) {
+void SPKDArrayDestroy(SPKDArray kdArr) {
 	int dim = 0;
 	int size = 0;
 	int i =0;
