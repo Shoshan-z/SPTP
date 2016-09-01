@@ -14,7 +14,7 @@
 #define INVALID_ARG_ERROR "Invalid arguments"
 #define MAX_SPREAD_ERROR "Could not find MAX_SPREAD"
 
-typedef struct kd_tree_node* KDTreeNode;
+
 
 bool treeSuccess = true;
 

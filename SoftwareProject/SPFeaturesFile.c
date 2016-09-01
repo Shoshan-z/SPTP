@@ -87,7 +87,7 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	fseek(fp, 0, SEEK_SET);
 
 	//each file should contain at least the imgageIndex, number of features and dimension
-	if (fileSize <3*sizeof(int)) {
+	if ((unsigned int) fileSize <3*sizeof(int)) {
 		goto cleanup;
 	}
 

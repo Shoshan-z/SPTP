@@ -226,7 +226,7 @@ int main(int argc, char** argv) {
 			freePointsArray(queryFeatures, queryNumOfFeats);
 		}
 
-		qsort(imagesRates, config->spNumOfImages, sizeof(int),rateCompare);
+		qsort(imagesRates, config->spNumOfImages, sizeof(imagesRates[0]),rateCompare);
 
 		//display the results
 		minGui = spConfigMinimalGui(config, &configMsg);

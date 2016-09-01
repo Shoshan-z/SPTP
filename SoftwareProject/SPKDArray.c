@@ -14,8 +14,6 @@
 #define INVALID_ARG_ERROR "Invalid arguments"
 #define POINTS_DIM_ERROR "Points dimensions mismatch"
 
-typedef struct sp_pointAndIndex* SPPointInd;
-typedef struct kdarray* SPKDArray;
 
 int coord =0;
 

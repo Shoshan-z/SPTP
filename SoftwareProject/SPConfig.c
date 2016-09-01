@@ -93,7 +93,7 @@ char* trimSpaces(char* str) {
 		str++;
 	}
 	//count spcaces in the end of the va
-	while (*strEnd == ' ' || *str == '\t') {
+	while (*strEnd == ' ' || *strEnd == '\t') {
 		strEnd--;
 		}
 

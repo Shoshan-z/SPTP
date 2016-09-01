@@ -19,7 +19,7 @@ C_COMP_FLAG = -std=c99 -Wall -Wextra \
 -Werror -pedantic-errors -DNDEBUG
 
 $(EXEC): $(OBJS) $(OUR_OBJS)
-	$(CPP) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
+	$(CPP) $(OBJS) $(OUR_OBJS) -L$(LIBPATH) $(LIBS) -o $@
 main.o: main.cpp #put dependencies here!
 	$(CPP) $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
 SPImageProc.o: SPImageProc.cpp SPImageProc.h SPConfig.h SPPoint.h SPLogger.h
@@ -29,8 +29,8 @@ SPImageProc.o: SPImageProc.cpp SPImageProc.h SPConfig.h SPPoint.h SPLogger.h
 SPPoint.o: SPPoint.c SPPoint.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 	
-$(OUR_OBJS):%:%.c
-	$(CC) $(C_COMP_FLAG) -c $@ $<
+$(OUR_OBJS):
+	$(CC) $(C_COMP_FLAG) -c $*.c
 	
 clean:
-	rm -f $(OBJS) $(EXEC)
+	rm -f $(OBJS) $(OUR_OBJS) $(EXEC)
