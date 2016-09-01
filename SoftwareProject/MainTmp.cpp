@@ -10,6 +10,7 @@ extern "C" {
 #include "KDTree.h"
 #include "KNNSearch.h"
 #include "SPListElement.h"
+#include "Utilities.h"
 }
 
 #define USAGE_ERROR "Invalid command line : use -c <config_filename>"
@@ -29,50 +30,8 @@ extern "C" {
 #define QUERY_PATH_ERROR "Could not open query image"
 #define BPQ_ERROR "Could not create BPQueue"
 
-struct image_rate_t{
-	int imgIndex;
-	int rate;
-};
-
-typedef struct image_rate_t* imageRate;
-
 //TODO add info printing!!!
 //TODO add "loop cleanup"
-imageRate imageRateCreate(int imgIndex, int rate){
-
-	imageRate imgR = (imageRate)malloc(sizeof(struct image_rate_t));
-	if (imgR == NULL) {
-		return NULL;
-	}
-	imgR->imgIndex = imgIndex;
-	imgR->rate = rate;
-	return imgR;
-}
-
-int rateCompare(const void* a, const void* b) {
-	imageRate img1 = *(imageRate* )a;
-	imageRate img2 = *(imageRate* )b;
-
-	if ((img2->rate - img1->rate)>0) {
-		return 1;
-	}
-	else if (img2->rate - img1->rate <0){
-		return -1;
-	}
-	else { //if the rate is equal, the image with the smaller index should be returned
-		return (img1->imgIndex - img2->imgIndex);
-	}
-}
-
-void freePointsArray(SPPoint* points, int size) {
-	int i = 0;
-	for (i=0; i<size; i++) {
-		spPointDestroy(points[i]);
-	}
-	free(points);
-}
-
-
 int main(int argc, char** argv) {
 	char configFName[1024] = "spcbir.config";
 	SPConfig config = NULL;
@@ -201,7 +160,7 @@ int main(int argc, char** argv) {
 	}
 
 	kdTree = initTree(kdArray, config->spKDTreeSplitMethod, 0);
-	if (kdTree == NULL) {
+	if (kdTree == NULL || treeSuccess == false) {
 		spLoggerPrintError(KD_TREE_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}

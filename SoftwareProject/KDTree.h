@@ -1,13 +1,10 @@
-/*
- * KDTree.h
- *
- *  Created on: Aug 22, 2016
- *      Author: Lilach
- */
-
 #ifndef KDTREE_H_
 #define KDTREE_H_
 #include "SPKDArray.h"
+
+/**A global variable holding an int that represents a coordinate*/
+extern bool treeSuccess;
+
 struct kd_tree_node{
 	int dim;//the splitting dimension- positive
 	double val;//The median value of the splitting dimension
@@ -15,6 +12,8 @@ struct kd_tree_node{
 	struct kd_tree_node* right;//Pointer to the right subtree
 	SPPoint data; //Pointer to a point (only if the current node is a leaf) otherwise this field value is NULL
 };
+
+
 /** Type for defining the kd_tree_node */
 typedef struct kd_tree_node* KDTreeNode;
 

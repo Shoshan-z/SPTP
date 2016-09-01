@@ -1,10 +1,3 @@
-
-/*
- * KDTree.c
- *
- *  Created on: Aug 22, 2016
- *      Author: Lilach
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,14 +10,15 @@
 #include <math.h>
 #include <time.h>
 
+#define ALLOC_ERROR_MSG "Allocation error"
+#define INVALID_ARG_ERROR "Invalid arguments"
+#define MAX_SPREAD_ERROR "Could not find MAX_SPREAD"
+
 typedef struct kd_tree_node* KDTreeNode;
 
-
+bool treeSuccess = true;
 
 KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
-	//TODO we first need to build a kd-array with all features stored in it
-	//and then we recursively apply the following steps:
-//!!! the recursive call is already there after the split: in the creation of the node at the bottom- in it's left and right fields..
 	KDTreeNode returnNode = NULL;
 	int spread = 0;
 	int random = 0;
@@ -38,7 +32,9 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	SPKDArray rightKDArr = NULL;
 
 	if (kdarr == NULL || spKDTreeSplitMethod == NONE || incrementingDimension < 0){
-		return NULL;// TODO verify if split method = NONE should we return null or what?
+		spLoggerPrintError(INVALID_ARG_ERROR, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		return NULL;
 	}
 
 	size= kdarr->size;
@@ -48,21 +44,41 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 
 	leftKDArr = allocateKDArray(coordinates, middle);
 	if (leftKDArr == NULL){
-		//TODO handle error
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		goto cleanup;
 	}
 	rightKDArr = allocateKDArray(coordinates, size-middle);
 	if (rightKDArr == NULL){
-		//TODO handle error
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		goto cleanup;
 	}
 
 	if (size==1){ // stop criteria
-		returnNode= initLeaf(-1, INFINITY, NULL, NULL);// TODO verify what is invalid in val
+		returnNode= initLeaf(-1, INFINITY, NULL, NULL);
+		if (returnNode == NULL){
+			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+			treeSuccess = false;
+			goto cleanup;
+		}
 		SPPoint p = spPointCopy((kdarr->points)[0]);
-		returnNode->data= p;//TODO!!! maybe we can directly pass points for it has only one point in it
+		if (p == NULL){
+			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+			treeSuccess = false;
+			goto cleanup;
+		}
+
+		returnNode->data= p;
 		return returnNode;
 	}
 	if (spKDTreeSplitMethod == MAX_SPREAD){
 		spread= findMaxSpread(kdarr);
+		if (spread == -1) {
+			spLoggerPrintError(MAX_SPREAD_ERROR, __FILE__, __func__, __LINE__);
+			treeSuccess = false;
+			goto cleanup;
+		}
 		splitDim= spread;
 	}
 	if (spKDTreeSplitMethod == RANDOM){
@@ -72,22 +88,28 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	}
 	if(spKDTreeSplitMethod == INCREMENTAL){
 		inc= (incrementingDimension)%coordinates;
-		//TODO incrementing dim?need to send with 0 at first
 		splitDim=inc;
 	}
 	split(kdarr, splitDim, leftKDArr, rightKDArr);
 	node = initEmptyNode();
+	if (node == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		goto cleanup;
+	}
+
 	node->dim = splitDim;
 	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle-1]], splitDim);// TODO is this what val means? the middle according to the split coordinate
 	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;
 
+cleanup:
 	//free the old kd array
 	SPKDArrayDestroy(leftKDArr);
 	SPKDArrayDestroy(rightKDArr);
 
-return node;
+	return node;
 }
 
 void KDTreeDestroy(KDTreeNode kdTree) {
@@ -103,11 +125,11 @@ void KDTreeDestroy(KDTreeNode kdTree) {
 KDTreeNode initLeaf(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~SPKDTree
 		KDTreeNode newNode=NULL;
 
-		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));//TODO verify dereference
+		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));
 		if (newNode ==NULL){
+			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
 			return NULL;
 		}
-
 		newNode->dim = dim;
 		newNode->val = val;
 		newNode->left =left;
@@ -116,15 +138,16 @@ KDTreeNode initLeaf(int dim, double val, KDTreeNode left,KDTreeNode right){// ~~
 
 		return newNode;
 }
+
 KDTreeNode initEmptyNode(){// ~~ SPKDTree
 	    KDTreeNode newNode=NULL;
-		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));//TODO verify dereference
+		newNode= (struct kd_tree_node*) malloc(sizeof (struct kd_tree_node));
 		if (newNode ==NULL){
-					return NULL;
+			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+			return NULL;
 		}
 		return newNode;
 }
-
 
 int findMaxSpread(SPKDArray kdArr){
 	double min = 0.0;
@@ -140,7 +163,8 @@ int findMaxSpread(SPKDArray kdArr){
 	size=kdArr->size;
 	cols=size;
 	spreadByDim = (double*)malloc(coordinates*sizeof(double));
-	if (spreadByDim == NULL){//TODO print to logger!! terminate program?
+	if (spreadByDim == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
 		return -1;
 	}
 
@@ -159,5 +183,3 @@ int findMaxSpread(SPKDArray kdArr){
 
 	return spreadDim;
 }
-
-

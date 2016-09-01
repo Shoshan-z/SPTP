@@ -479,7 +479,7 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg){
 	assert(msg!= NULL);
 	if (!config){
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
-	}else{ // TODO config != NULL means success here?
+	}else{
 		*msg = SP_CONFIG_SUCCESS;
 	}
 
@@ -536,7 +536,6 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg){
 }
 
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int index){
-	//imagePath = malloc(1024 * sizeof(char)); // TODO should do it like that-alocate the space here? ( shoshan)/ remember to free!
 	if (!config || !imagePath){
 			return SP_CONFIG_INVALID_ARGUMENT;
 		}
@@ -550,7 +549,6 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config, int i
 
 
 SP_CONFIG_MSG spConfigCreateFeatsPath(char* featsPath, const SPConfig config, int index){
-	//imagePath = malloc(1024 * sizeof(char)); // TODO should do it like that-alocate the space here? ( shoshan)/ remember to free!
 	if (!config || !featsPath){
 			return SP_CONFIG_INVALID_ARGUMENT;
 		}
@@ -565,7 +563,6 @@ SP_CONFIG_MSG spConfigCreateFeatsPath(char* featsPath, const SPConfig config, in
 
 
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
-	//pcaPath = malloc(1024 * sizeof(char)); TODO// should do it like that-alocate the space here? ( shoshan)/ remember to free!
 	if (!config || !pcaPath){
 		return SP_CONFIG_INVALID_ARGUMENT;
 	}
@@ -575,11 +572,6 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config){
 
 	return SP_CONFIG_SUCCESS;
 }
-
-
-
-
-
 
 void spConfigDestroy(SPConfig config){
 	if (config == NULL) {

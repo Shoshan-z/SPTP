@@ -1,9 +1,3 @@
-/*
- * SPKDArrayN.c
- *
- *  Created on: Aug 25, 2016
- *      Author: Lilach
- */
 #include "SPKDArray.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +8,7 @@
 #include <assert.h>
 #include "SPPoint.h"
 #include <math.h>
-
+#include "Utilities.h"
 
 #define ALLOC_ERROR_MSG "Allocation error"
 #define INVALID_ARG_ERROR "Invalid arguments"
@@ -69,7 +63,7 @@ SPKDArray allocateKDArray(int dim, int size){
 		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
 		return NULL;
 	}
-	for(i=0; i<dim; i++){//TODO add the for loops
+	for(i=0; i<dim; i++){
 		matrix[i]= (int*)malloc(sizeof(int)*size);
 		if(matrix[i] ==NULL){
 			spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
@@ -237,7 +231,7 @@ int compare (const void * a, const void * b)
 	}
 }
 
-//TODO error handling and memory free was done up to this point
+
 void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr){
 	int* LRArray = NULL;
 	int middle =0;
@@ -252,25 +246,45 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 	int* map2 = {0};
 	SPPoint* p1 = NULL;
 	SPPoint* p2 = NULL;
+	bool success = false;
 
-	if (kdArr == NULL || coor<0 || leftKDArr==NULL || rightKDArr!=NULL ){
+	if (kdArr == NULL || coor<0 || leftKDArr==NULL || rightKDArr == NULL ){
 		spLoggerPrintError(INVALID_ARG_ERROR, __FILE__, __func__, __LINE__);
+		goto cleanup;
 	}
 
 	rows= kdArr->dim;
 	size= kdArr->size;
 	middle =(int)(ceil((double)size/2));
 
-	p1 = (SPPoint*)malloc(sizeof(SPPoint)*middle);
-	p2 = (SPPoint*)malloc(sizeof(SPPoint)*(size-middle));
-	LRArray = (int*)malloc(sizeof(int)*size);//SHOSHAN: =the X array, dynamically allocated because size is defined only in runtime
-	assert(LRArray != NULL); //TODO couldn't return null in a void func
-	map1 = (int*)malloc(sizeof(int)*size);
-	assert(map1 != NULL); //TODO couldn't return null in a void func
-	map2 = (int*)malloc(sizeof(int)*size);
-	assert(map2 != NULL); //TODO couldn't return null in a void func
+	p1 = (SPPoint*)calloc(sizeof(SPPoint),middle);
+	if (p1 == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
 
-	for(i = 0; i < size; i++){ //SHOSHAN filling in the LRArray (X in doc)
+	p2 = (SPPoint*)calloc(sizeof(SPPoint),(size-middle));
+	if (p2 == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
+	LRArray = (int*)malloc(sizeof(int)*size);//the X array, dynamically allocated because size is defined only in runtime
+	if (LRArray == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
+
+	map1 = (int*)malloc(sizeof(int)*size);
+	if (map1 == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
+	map2 = (int*)malloc(sizeof(int)*size);
+	if (map1 == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		goto cleanup;
+	}
+	for(i = 0; i < size; i++){ //filling in the LRArray (X in doc)
 		indexInOrigin = (kdArr->matrix)[coor][i];
 		if( i < middle){
 			LRArray[indexInOrigin]=0;
@@ -284,11 +298,19 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 
 	for(i = 0; i < size; i++){// split to leftArr= p1  and rightArr=p2
 		if (LRArray[i]==0){
-			p1[l]=spPointCopy((kdArr->points)[i]); //TODO: check returnvalue
+			p1[l]=spPointCopy((kdArr->points)[i]);
+			if (p1[l] == NULL) {
+				spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+				goto cleanup;
+			}
 			l++;
 		}
 		else{
-			p2[r]=spPointCopy((kdArr->points)[i]); //TODO: check returnvalue
+			p2[r]=spPointCopy((kdArr->points)[i]);
+			if (p2[r] == NULL) {
+				spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+				goto cleanup;
+			}
 			r++;
 
 		}
@@ -332,5 +354,15 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 	rightKDArr->points = p2;
 	rightKDArr->dim = rows;
 	rightKDArr->size= size-middle;
+
+	success = true;
+cleanup:
+	if (!success){
+		freePointsArray(p1,middle);
+		freePointsArray(p2, size-middle);
+	}
+	free(LRArray);
+	free(map1);
+	free(map2);
 
 }

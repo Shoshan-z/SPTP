@@ -1,9 +1,3 @@
-/*
- * SPKDArray.h
- *
- *  Created on: Aug 11, 2016
- *      Author: Lilach
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -101,6 +95,10 @@ int compare (const void * a, const void * b);
  */
 void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr);//, SPPoint* pointArray);
 
+/**
+ * Free all memory allocation associated with kdArr,
+ * if kdArr is NULL nothing happens.
+ */
 void SPKDArrayDestroy(SPKDArray kdArr);
 
 #endif /* SPKDARRAY_H_ */
