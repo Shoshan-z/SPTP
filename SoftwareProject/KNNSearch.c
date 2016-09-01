@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define BPQ_ERROR "Could not enqueue element to BPQ"
+
 bool isLeaf(KDTreeNode kdTreeNode){
 	if(kdTreeNode==NULL){//LOGGER
 		return NULL;
@@ -12,8 +14,6 @@ bool isLeaf(KDTreeNode kdTreeNode){
 	}
 	return true;
 }
-
-
 
 void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	SPListElement element = NULL;
@@ -30,6 +30,11 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 		distance =sqrt(spPointL2SquaredDistance(curr->data,point));
 		element = spListElementCreate(spPointGetIndex(curr->data), distance);
 		bpqMsg	= spBPQueueEnqueue(bpq, element);
+		if (bpqMsg == SP_BPQUEUE_INVALID_ARGUMENT || bpqMsg == SP_BPQUEUE_OUT_OF_MEMORY) {
+			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
+			//TODO verify if we when enqueue fails we should "termintate" - indicate
+			//in main that the search failed. extren searchSucess?
+		}
 		return;
 	}
 
@@ -50,7 +55,7 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 		//if the if returns true -then recursively search the other subtree on the next axis
 
 		if(isLeftChosen){
-			if (curr->right != NULL){//??? is this the case Moab talks about when we shouldn't search the other side?
+			if (curr->right != NULL){
 				kNearestNeighbors(curr->right ,bpq , point);
 			}
 		}
@@ -61,4 +66,3 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 		}
 	}
 }
-

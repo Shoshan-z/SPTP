@@ -8,7 +8,7 @@ spPCADimension = 28
 spNumOfFeatures = 100
 spExtractionMode = false
 
-spNumOfSimilarImages = 5
+spNumOfSimilarImages = +5
 spKDTreeSplitMethod = RANDOM
 spKNN = 10
 

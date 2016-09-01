@@ -99,7 +99,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	}
 
 	node->dim = splitDim;
-	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle-1]], splitDim);// TODO is this what val means? the middle according to the split coordinate
+	node->val = spPointGetAxisCoor((kdarr->points)[(kdarr->matrix)[splitDim][middle-1]], splitDim);
 	node->left = initTree(leftKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node->right = initTree(rightKDArr,spKDTreeSplitMethod, incrementingDimension+1);
 	node-> data = NULL;

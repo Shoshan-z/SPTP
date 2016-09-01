@@ -72,7 +72,6 @@ int spBPQueueGetMaxSize(SPBPQueue source) {
 SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element){
 	int counter =0;
 	int size = spBPQueueSize(source);
-	//SPListElement copyE = NULL;//???copy is unncessary because the insert to the list function creates a new node which is a copy of the element
 	SPListElement curr =NULL;
 	SPListElement next = NULL;
 	SP_LIST_MSG msg;

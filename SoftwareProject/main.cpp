@@ -31,7 +31,7 @@ extern "C" {
 #define BPQ_ERROR "Could not create BPQueue"
 
 //TODO add info printing!!!
-//TODO add "loop cleanup"
+
 int main(int argc, char** argv) {
 	char configFName[1024] = "spcbir.config";
 	SPConfig config = NULL;
@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
 	SPListElement currElement = NULL;
 	char queryPath[1024] = {0};
 	int filesStored = 0; //will hold the number of features file successfully stored
+	FILE* fp = NULL;
 	bool extractMode = false;
 	bool minGui = false;
 	bool success = false;
@@ -166,6 +167,9 @@ int main(int argc, char** argv) {
 	}
 
 	while (strcmp(queryPath, "<>")!=0 ) {
+		bpq = NULL;
+		queryFeatures = NULL;
+
 		printf("Please enter an image path:\n");
 		fflush(stdout);
 		scanf("%s", queryPath);
@@ -174,6 +178,15 @@ int main(int argc, char** argv) {
 		if (strcmp(queryPath, "<>")==0) {
 			break;
 		}
+		fp = fopen (queryPath, "r");
+		if (fp == NULL){
+			printf("Invalid query path\n\n");
+			spLoggerPrintWarning(IMAGE_PATH_WARNING, __FILE__, __func__, __LINE__);
+			fflush(stdout);
+			continue;
+		}
+		fclose(fp);
+
 		queryFeatures = imageProc->getImageFeatures((const char*)queryPath, config->spNumOfImages, &queryNumOfFeats);
 		if (queryFeatures == NULL){
 			spLoggerPrintError(QUERY_PATH_ERROR, __FILE__, __func__, __LINE__);
@@ -253,8 +266,8 @@ cleanup:
 		SPKDArrayDestroy(kdArray);
 	}
 
-	if (queryFeatures != NULL){ //TODO check if need to also be freed here
-		//freePointsArray(allFeatures, totalFeatures);
+	if (queryFeatures != NULL){
+		freePointsArray(queryFeatures, queryNumOfFeats);
 	}
 
 	if (bpq != NULL){ //TODO check if need to also be freed here
