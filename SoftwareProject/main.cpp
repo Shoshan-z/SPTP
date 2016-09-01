@@ -215,6 +215,7 @@ int main(int argc, char** argv) {
 				currElement = spBPQueuePeek(bpq);
 				imagesRates[spListElementGetIndex(currElement)]->rate+=1;
 				spBPQueueDequeue(bpq);
+				spListElementDestroy(currElement);
 			}
 		}
 

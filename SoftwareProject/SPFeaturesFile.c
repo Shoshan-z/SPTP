@@ -161,6 +161,10 @@ cleanup:
 		free(allFeatures);
 		}
 
+	if (coor != NULL) {
+		free(coor);
+	}
+
 	if (fp != NULL) {
 		fclose(fp);
 	}

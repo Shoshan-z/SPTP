@@ -41,20 +41,6 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	coordinates = kdarr->dim;// =num of rows = num of coordinates in each point
 	middle = (int)(ceil((double) size/2));
 
-
-	leftKDArr = allocateKDArray(coordinates, middle);
-	if (leftKDArr == NULL){
-		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
-		treeSuccess = false;
-		goto cleanup;
-	}
-	rightKDArr = allocateKDArray(coordinates, size-middle);
-	if (rightKDArr == NULL){
-		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
-		treeSuccess = false;
-		goto cleanup;
-	}
-
 	if (size==1){ // stop criteria
 		returnNode= initLeaf(-1, INFINITY, NULL, NULL);
 		if (returnNode == NULL){
@@ -70,8 +56,23 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 		}
 
 		returnNode->data= p;
-		return returnNode;
+		node = returnNode;
+		goto cleanup;
 	}
+
+	leftKDArr = allocateKDArray(coordinates, middle);
+	if (leftKDArr == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		goto cleanup;
+	}
+	rightKDArr = allocateKDArray(coordinates, size-middle);
+	if (rightKDArr == NULL){
+		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
+		treeSuccess = false;
+		goto cleanup;
+	}
+
 	if (spKDTreeSplitMethod == MAX_SPREAD){
 		spread= findMaxSpread(kdarr);
 		if (spread == -1) {
@@ -106,6 +107,7 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 
 cleanup:
 	//free the old kd array
+
 	SPKDArrayDestroy(leftKDArr);
 	SPKDArrayDestroy(rightKDArr);
 
@@ -116,6 +118,13 @@ void KDTreeDestroy(KDTreeNode kdTree) {
 	if (kdTree == NULL) {
 		return;
 	}
+
+	if (isLeaf(kdTree))
+	{
+		if (kdTree->data != NULL)
+			spPointDestroy(kdTree->data);
+	}
+
 	KDTreeDestroy(kdTree->right);
 	KDTreeDestroy(kdTree->left);
 
@@ -182,4 +191,14 @@ int findMaxSpread(SPKDArray kdArr){
 	free(spreadByDim);
 
 	return spreadDim;
+}
+
+bool isLeaf(KDTreeNode kdTreeNode){
+	if(kdTreeNode==NULL){
+		return NULL;
+	}
+	if(kdTreeNode->data == NULL){
+		return false;
+	}
+	return true;
 }

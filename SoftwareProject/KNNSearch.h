@@ -21,11 +21,6 @@
  * @SPPoint point- the point of interest
  */
 void kNearestNeighbors( KDTreeNode curr , SPBPQueue bpq, SPPoint point);
-/*
- * @returns true if the given KDTreeNode kdTreeNode is a leaf
- * false if it's not OR NULL in case kdTreeNode is NULL
- */
-bool isLeaf(KDTreeNode kdTreeNode);
 
 
 

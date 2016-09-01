@@ -5,16 +5,6 @@
 
 #define BPQ_ERROR "Could not enqueue element to BPQ"
 
-bool isLeaf(KDTreeNode kdTreeNode){
-	if(kdTreeNode==NULL){//LOGGER
-		return NULL;
-	}
-	if(kdTreeNode->data == NULL){
-		return false;
-	}
-	return true;
-}
-
 void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	SPListElement element = NULL;
 	double distance =0.0;
@@ -30,6 +20,7 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 		distance =sqrt(spPointL2SquaredDistance(curr->data,point));
 		element = spListElementCreate(spPointGetIndex(curr->data), distance);
 		bpqMsg	= spBPQueueEnqueue(bpq, element);
+		spListElementDestroy(element);
 		if (bpqMsg == SP_BPQUEUE_INVALID_ARGUMENT || bpqMsg == SP_BPQUEUE_OUT_OF_MEMORY) {
 			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
 			//TODO verify if we when enqueue fails we should "termintate" - indicate
