@@ -61,13 +61,10 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	SPPoint tmpPoint = NULL;
 	SPPoint* tmpFeatures = NULL;
 	FILE* fp = NULL;
-	int indexFromFile = 0;
-	int dim = 0;
+	int indexFromFile = 0, dim = 0;
 	double* coor = NULL;
-	int i = 0;
-	int j =0;
-	int currNumOfFeatures =0;
-	int fileSize = 0;
+	int i = 0, j =0;
+	int currNumOfFeatures =0, fileSize = 0;
 	int readBytes = 0; //will hold the bytes which were currently read
 	char errorString[1024] = {0};
 	bool success = false;
@@ -75,12 +72,10 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	if (featsPath == NULL){
 		goto cleanup;
 	}
-
 	fp = fopen(featsPath, "rb");
 	if (fp == NULL){ //couldn't open the file
 		goto cleanup;
 	}
-
 	//check file size
 	fseek(fp, 0, SEEK_END);
 	fileSize = ftell(fp);
@@ -91,38 +86,29 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 		goto cleanup;
 	}
 
-	//read the image index
-	readBytes = fread(&indexFromFile, sizeof(int), 1, fp);
+	readBytes = fread(&indexFromFile, sizeof(int), 1, fp); 	//read the image index
 	if (readBytes != 1) {
 		goto cleanup;
 	}
-
-	//read number of features
-	readBytes = fread(&currNumOfFeatures, sizeof(int), 1, fp);
+	readBytes = fread(&currNumOfFeatures, sizeof(int), 1, fp); 	//read number of features
 	if (readBytes != 1) {
 			goto cleanup;
 		}
 
-	//store a pointer to the new all features array
-	tmpFeatures = (SPPoint*) calloc(sizeof(SPPoint), (*numOfFeatures+currNumOfFeatures));
+	tmpFeatures = (SPPoint*) calloc(sizeof(SPPoint), (*numOfFeatures+currNumOfFeatures));	//store a pointer to the new all features array
 		if (tmpFeatures == NULL) {
 			goto cleanup;
 	}
-
 	memcpy(tmpFeatures, allFeatures,*numOfFeatures*(sizeof(SPPoint)));
-
 
 	readBytes = fread(&dim, sizeof(int), 1, fp);
 	if (readBytes != 1) {
 		goto cleanup;
 		}
-
-	//create the coordinates array for the current point
-	coor = (double*) malloc (sizeof(double)*(dim));
+	coor = (double*) malloc (sizeof(double)*(dim)); //create the coordinates array for the current point
 	if (coor == NULL) {
 		goto cleanup;
 	}
-
 	for (i=*numOfFeatures; i<*numOfFeatures+ currNumOfFeatures; i++){
 		for(j=0; j<dim; j++) {
 			readBytes = fread(coor+j, sizeof(double), 1, fp);
@@ -160,15 +146,11 @@ cleanup:
 		{
 		free(allFeatures);
 		}
-
 	if (coor != NULL) {
 		free(coor);
 	}
-
 	if (fp != NULL) {
 		fclose(fp);
 	}
 	return tmpFeatures;
 }
-
-

@@ -14,18 +14,11 @@
 #define INVALID_ARG_ERROR "Invalid arguments"
 #define MAX_SPREAD_ERROR "Could not find MAX_SPREAD"
 
-
-
 bool treeSuccess = true;
 
 KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incrementingDimension){//maybe instead of kdarr we need do send features/sppoints array and use init of kdarray
 	KDTreeNode returnNode = NULL;
-	int spread = 0;
-	int random = 0;
-	int splitDim = 0;
-	int middle = 0;
-	int size=0;
-	int coordinates =0;
+	int spread = 0, random = 0, splitDim = 0, middle = 0, size=0, coordinates =0;
 	int inc = 0; // will hold the new incrementingDimension
 	KDTreeNode node = NULL;
 	SPKDArray leftKDArr = NULL;
@@ -106,8 +99,6 @@ KDTreeNode initTree(SPKDArray kdarr, SPLIT_METHOD spKDTreeSplitMethod, int incre
 	node-> data = NULL;
 
 cleanup:
-	//free the old kd array
-
 	SPKDArrayDestroy(leftKDArr);
 	SPKDArrayDestroy(rightKDArr);
 
@@ -159,8 +150,7 @@ KDTreeNode initEmptyNode(){// ~~ SPKDTree
 }
 
 int findMaxSpread(SPKDArray kdArr){
-	double min = 0.0;
-	double max = 0.0;
+	double min = 0.0, max = 0.0;
 	int i = 0;
 	int size=0;
 	double maxSpread = 0.0;

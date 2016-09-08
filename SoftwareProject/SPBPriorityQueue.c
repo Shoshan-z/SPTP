@@ -12,7 +12,7 @@ struct sp_bp_queue_t{
 
 SPBPQueue spBPQueueCreate(int maxSize){
 
-	if (maxSize <1){ //TODO Lilach that's all we needed to change :)
+	if (maxSize <1){
 		return NULL;
 	}
 

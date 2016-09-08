@@ -13,9 +13,6 @@ extern "C" {
 #include "Utilities.h"
 }
 
-#define USAGE_ERROR "Invalid command line : use -c <config_filename>"
-#define OPEN_DEFAULT_CONFIG_ERRROR "The default configuration file spcbir.config couldn’t be open"
-#define OPEN_CONFIG_EROOR "The configuration file %s couldn’t be open"
 #define OPEN_LOGGER_ERROR "Cannot initialize logger"
 #define CREATE_IMGPROC_ERROR "Could not create the image processing object"
 #define IMAGE_PATH_WARNING "Image path couldn't be resolved"
@@ -33,63 +30,30 @@ extern "C" {
 //TODO add info printing!!!
 
 int main(int argc, char** argv) {
-	char configFName[1024] = "spcbir.config";
 	SPConfig config = NULL;
 	SP_CONFIG_MSG configMsg;
 	SP_LOGGER_MSG loggerMsg;
-	int i = 0;
-	int j = 0;
+	int i = 0, j=0;
 	sp::ImageProc* imageProc = NULL;
-	char imgPath[1024] = {0};
-	char featsPath[1024] = {0};
+	char imgPath[1024] = {0}, featsPath[1024] = {0};
 	SPPoint* imgFeatures = NULL;
 	SPPoint* allFeatures = NULL;
-	int dim = 0;
-	int featuresPerImage = 0;
-	int totalFeatures = 0;
+	int dim = 0, featuresPerImage = 0, totalFeatures = 0, queryNumOfFeats = 0;
 	SPKDArray kdArray = NULL;
 	KDTreeNode kdTree = NULL;
 	SPBPQueue bpq = NULL;
 	imageRate* imagesRates = NULL;
-	int queryNumOfFeats = 0;
 	SPPoint* queryFeatures = NULL;
 	SPListElement currElement = NULL;
 	char queryPath[1024] = {0};
 	int filesStored = 0; //will hold the number of features file successfully stored
 	FILE* fp = NULL;
-	bool extractMode = false;
-	bool minGui = false;
-	bool success = false;
+	bool extractMode = false, minGui = false, success = false;
 
-
-	if (argc == 1) {
-		config = spConfigCreate(configFName, &configMsg);
-		if (configMsg == SP_CONFIG_CANNOT_OPEN_FILE) {
-			printf(OPEN_DEFAULT_CONFIG_ERRROR"\n");
-			return -1;
-		}
-	}
-
-	if (argc == 2 || argc>3) {
-		printf(USAGE_ERROR"\n");
+	config = checkArgs(argc, argv);
+	if (config == NULL) {
 		return -1;
 	}
-
-	if (strcmp(argv[1], "-c") != 0) {
-		printf(USAGE_ERROR"\n");
-		return -1;
-	}
-
-	strcpy(configFName, argv[2]);
-	config = spConfigCreate(configFName, &configMsg);
-	if (configMsg == SP_CONFIG_CANNOT_OPEN_FILE) {
-		printf(OPEN_CONFIG_EROOR"\n",configFName);
-		return -1;
-	}
-	else if (configMsg != SP_CONFIG_SUCCESS) {
-		return -1;
-	}
-
 
 	loggerMsg = spLoggerCreate(config->spLoggerFilename, config->spLoggerLevel);
 	if (loggerMsg != SP_LOGGER_SUCCESS) {
@@ -131,7 +95,6 @@ int main(int argc, char** argv) {
 			if (imgFeatures != NULL) {
 				freePointsArray(imgFeatures, featuresPerImage);
 			}
-
 		}
 		if (filesStored == 0) {
 			spLoggerPrintError(FEATURES_ERROR,__FILE__, __func__, __LINE__);
@@ -139,8 +102,7 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	//create an array which stores the features
-	for (i=0; i<spConfigGetNumOfImages(config, &configMsg); i++) {
+	for (i=0; i<spConfigGetNumOfImages(config, &configMsg); i++) { 	//create an array which stores the features
 		configMsg =  spConfigCreateFeatsPath(featsPath,config, i);
 		if (configMsg != SP_CONFIG_SUCCESS) {
 			spLoggerPrintWarning(FEATS_PATH_WARNING, __FILE__, __func__, __LINE__);
@@ -148,28 +110,23 @@ int main(int argc, char** argv) {
 		}
 		allFeatures = getFeaturesFromFile(allFeatures,&totalFeatures, featsPath, i);
 	}
-
 	if (allFeatures == NULL || totalFeatures == 0) {
 		spLoggerPrintError(NO_FEATURES_EXTRACTED_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
-
 	kdArray = init(allFeatures, totalFeatures);
 	if (kdArray == NULL){
 		spLoggerPrintError(KD_ARRAY_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
-
 	kdTree = initTree(kdArray, config->spKDTreeSplitMethod, 0);
 	if (kdTree == NULL || treeSuccess == false) {
 		spLoggerPrintError(KD_TREE_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
-
 	while (strcmp(queryPath, "<>")!=0 ) {
 		bpq = NULL;
 		queryFeatures = NULL;
-
 		printf("Please enter an image path:\n");
 		fflush(stdout);
 		scanf("%s", queryPath);
@@ -192,7 +149,6 @@ int main(int argc, char** argv) {
 			spLoggerPrintError(QUERY_PATH_ERROR, __FILE__, __func__, __LINE__);
 			goto cleanup;
 		}
-
 		bpq = spBPQueueCreate(config->spKNN);
 		if (bpq == NULL) {
 			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
@@ -262,19 +218,15 @@ cleanup:
 	if (allFeatures != NULL){
 		freePointsArray(allFeatures, totalFeatures);
 	}
-
 	if (kdArray != NULL) {
 		SPKDArrayDestroy(kdArray);
 	}
-
 	if (queryFeatures != NULL){
 		freePointsArray(queryFeatures, queryNumOfFeats);
 	}
-
 	if (bpq != NULL){ //TODO check if need to also be freed here
 		spBPQueueDestroy(bpq);
 		}
-	//free image rates
 	if (imagesRates != NULL) {
 		for (i =0; i<config->spNumOfSimilarImages; i++) {
 			free(imagesRates[i]);
@@ -284,12 +236,10 @@ cleanup:
 	if (imageProc != NULL) {
 		delete imageProc;
 	}
-
 	if (kdTree != NULL){
 		KDTreeDestroy(kdTree);
 	}
 	spLoggerDestroy();
-
 	if (!success) {
 		printf("An error occurred, see log file for details\n");
 		return -1;

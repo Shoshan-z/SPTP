@@ -21,7 +21,6 @@ bool isEmpty(char* str) {
 	return false;
 }
 
-
 bool isComment(char* str) {
 	if (isEmpty(str)) {
 		return false;
@@ -33,9 +32,6 @@ bool isComment(char* str) {
 	return (*str == '#');
 }
 
-/*
- * return true if the line contains an equal sign
- */
 bool containsEqual(char* str) {
 	if (isEmpty(str)) {
 			return false;
@@ -49,11 +45,6 @@ bool containsEqual(char* str) {
 	return false;
 }
 
-/*
- * split lines by '=' sign
- *
- * if one of the tokens doesn't exist, the pointers will contain "NULL"
- */
 void splitLine(char* line, char* name, char* val) {
 	char lineCopy[1025];
 	char* tmpName = NULL;
@@ -74,9 +65,7 @@ void splitLine(char* line, char* name, char* val) {
 		strcpy(val, tmpVal);
 	}
 }
-/*
- * returns a pointer to the string with no spaces in the start and end
- */
+
 char* trimSpaces(char* str) {
 	int len = 0;
 	char* strEnd = NULL;
@@ -103,9 +92,6 @@ char* trimSpaces(char* str) {
 	return str;
 }
 
-/*
- * returns true if the string contains no spaces
- */
 bool checkStrConstraint(char* str) {
 	if (isEmpty(str)) {
 			return false;
@@ -119,9 +105,6 @@ bool checkStrConstraint(char* str) {
 	return true;
 }
 
-/*
- * returns "false" if the string doesn't represent a positive integer
- */
 bool isInt(char* str){
 	if (isEmpty(str)) {
 			return false;
@@ -139,10 +122,6 @@ bool isInt(char* str){
 	return true;
 }
 
-/*
- * returns "false" if the string is not "true" or "false"
- * the boolen value itself will be in *b
- */
 bool isBool(char* str, bool* b){
 	char copy[6] = {0};
 	int i =0;
@@ -168,9 +147,6 @@ bool isBool(char* str, bool* b){
 
 }
 
-/**
- * changes a string to be all upper case
- */
 void strToUpperCase(char* str) {
 	if (isEmpty(str)) {
 			return;
@@ -181,14 +157,6 @@ void strToUpperCase(char* str) {
 	}
 }
 
-
-/*
- * the functions takes each line and fill in the correspondent value in the configuration struct
- * return: SP_CONFIG_SUCCESS in case of success,
- * 		   SP_CONFIG_INVALID_STRING
- * 		   SP_CONFIG_INVALID_INTEGER
- * 		   SP_CONFIG_MISSING_SUFFIX
- */
 SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 	int tmpNum = 0;
 	bool tmpBool = false;
@@ -196,7 +164,6 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 	if (!checkStrConstraint(name) || !checkStrConstraint(value)){
 		return SP_CONFIG_INVALID_STRING;
 	}
-
 	if (strcmp(name, "spImagesDirectory") == 0) {
 		if (value == NULL) {
 			return SP_CONFIG_MISSING_DIR;
@@ -209,7 +176,6 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		strcpy(config->spImagesPrefix, value);
 		return SP_CONFIG_SUCCESS;
 	}
-
 	if (strcmp(name, "spImagesSuffix") == 0) {
 		if (strcmp(value, ".jpg") != 0 && strcmp(value, ".png") !=0 && strcmp(value, ".bmp") != 0  && strcmp(value, ".gif") != 0 ) {
 			return SP_CONFIG_MISSING_SUFFIX;
@@ -217,7 +183,6 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		strcpy(config->spImagesSuffix, value);
 		return SP_CONFIG_SUCCESS;
 	}
-
 	if (strcmp(name, "spNumOfImages") == 0) {
 		if (!isInt(value)) {
 			return SP_CONFIG_INVALID_INTEGER;
@@ -226,7 +191,6 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		config->spNumOfImages = tmpNum;
 		return SP_CONFIG_SUCCESS;
 		}
-
 	if (strcmp(name, "spPCADimension") == 0) {
 			if (!isInt(value)) {
 				return SP_CONFIG_INVALID_INTEGER;
@@ -238,7 +202,6 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 		config->spPCADimension = tmpNum;
 		return SP_CONFIG_SUCCESS;
 		}
-
 	if (strcmp(name, "spPCAFilename") == 0){
 		strcpy(config->spPCAFilename, value);
 		return SP_CONFIG_SUCCESS;
@@ -322,19 +285,14 @@ SP_CONFIG_MSG matchValue(SPConfig config, char* name, char* value){
 			config->spLoggerLevel = tmpNum;
 			return SP_CONFIG_SUCCESS;
 			}
-
 		if (strcmp(name, "spLoggerFilename") == 0) {
 			strcpy(config->spLoggerFilename, value);
 			return SP_CONFIG_SUCCESS;
 			}
 
-
 		return SP_CONFIG_INVALID_LINE;
 }
 
-/*
- * the function returns a pointer to a configuration struct with empty fields
- */
 SPConfig createEmptyConfig(){
 	SPConfig config = NULL;
 	config = (SPConfig) calloc (sizeof(struct sp_config_t), 1);
@@ -354,12 +312,6 @@ SPConfig createEmptyConfig(){
 	return config;
 }
 
-
-
-/*
- *
- *
- */
 void printError(const char* filename, int line, SP_CONFIG_MSG msg){
 	char* message = NULL;
 	char* param = NULL;
@@ -393,9 +345,6 @@ void printError(const char* filename, int line, SP_CONFIG_MSG msg){
 	printf("Message: %s\n", message);
 }
 
-/*
- * checks if one of the parameters with no default value is not set
- */
 SP_CONFIG_MSG validateConfig(SPConfig config){
 	if (isEmpty(config->spImagesDirectory)) {
 		return SP_CONFIG_MISSING_DIR;
@@ -414,7 +363,7 @@ SP_CONFIG_MSG validateConfig(SPConfig config){
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 	FILE* fp = NULL;
-	char line[1024] = {0}; //1025? the zero terminating the string
+	char line[1024] = {0};
 	char name[1024] = {0};
 	char val[1024] = {0};
 	char* namePtr = NULL;
@@ -426,19 +375,16 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 		*msg = SP_CONFIG_INVALID_ARGUMENT;
 		goto cleanup;
 	}
-
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
 		*msg = SP_CONFIG_CANNOT_OPEN_FILE;
 		goto cleanup;
 	}
-
 	config = createEmptyConfig();
 	if (config == NULL) {
 		*msg = SP_CONFIG_ALLOC_FAIL;
 		return NULL;
 	}
-
 	while(fgets(line, sizeof(line), fp) != NULL){
 		lineNum++;
 		if (isEmpty(line) || isComment(line)) {
@@ -448,7 +394,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 			*msg = SP_CONFIG_INVALID_LINE;
 			goto cleanup;
 			}
-
 		splitLine(line, name, val);
 		namePtr = trimSpaces(name);
 		valPtr = trimSpaces(val);
