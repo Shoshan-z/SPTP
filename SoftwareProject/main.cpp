@@ -29,23 +29,59 @@ extern "C" {
 
 //TODO add info printing!!!
 
+int saveFeaturesToFiles(SPConfig config, sp::ImageProc* imageProc) {
+	SP_CONFIG_MSG configMsg;
+	int i =0;
+	int featuresPerImage = 0;
+	int filesStored = 0;
+	char imgPath[1024] = {0}, featsPath[1024] = {0};
+	SPPoint* imgFeatures = NULL;
+	int dim = 0;
+
+	//store the dimension of all points
+	dim = config->spPCADimension;
+
+	for (i =0; i<spConfigGetNumOfImages(config, &configMsg); i++) {
+		configMsg =  spConfigGetImagePath(imgPath,config,i);
+		if (configMsg != SP_CONFIG_SUCCESS) {
+			spLoggerPrintWarning(IMAGE_PATH_WARNING, __FILE__, __func__, __LINE__);
+			continue;
+		}
+		configMsg =  spConfigCreateFeatsPath(featsPath,config, i);
+		if (configMsg != SP_CONFIG_SUCCESS) {
+			spLoggerPrintWarning(FEATS_PATH_WARNING, __FILE__, __func__, __LINE__);
+			continue;
+		}
+		imgFeatures = imageProc->getImageFeatures(imgPath, i, &featuresPerImage);
+		if (imgFeatures == NULL) {
+			spLoggerPrintWarning(FEATURES_WARNING,__FILE__, __func__, __LINE__);
+			continue;
+		}
+		if (storeFeatures(imgFeatures, featuresPerImage, featsPath, i, dim)== true) {
+			filesStored++;
+		}
+		if (imgFeatures != NULL) {
+			freePointsArray(imgFeatures, featuresPerImage);
+		}
+	}
+	return filesStored;
+}
+
 int main(int argc, char** argv) {
 	SPConfig config = NULL;
 	SP_CONFIG_MSG configMsg;
 	SP_LOGGER_MSG loggerMsg;
 	int i = 0, j=0;
 	sp::ImageProc* imageProc = NULL;
-	char imgPath[1024] = {0}, featsPath[1024] = {0};
-	SPPoint* imgFeatures = NULL;
+	char imgPath[1024] = {0}, featsPath[1024] = {0}, queryPath[1024] = {0};
 	SPPoint* allFeatures = NULL;
-	int dim = 0, featuresPerImage = 0, totalFeatures = 0, queryNumOfFeats = 0;
+	int totalFeatures = 0, queryNumOfFeats = 0;
 	SPKDArray kdArray = NULL;
 	KDTreeNode kdTree = NULL;
 	SPBPQueue bpq = NULL;
 	imageRate* imagesRates = NULL;
 	SPPoint* queryFeatures = NULL;
 	SPListElement currElement = NULL;
-	char queryPath[1024] = {0};
 	int filesStored = 0; //will hold the number of features file successfully stored
 	FILE* fp = NULL;
 	bool extractMode = false, minGui = false, success = false;
@@ -61,9 +97,6 @@ int main(int argc, char** argv) {
 		goto cleanup;
 	}
 
-	//store the dimension of all points
-	dim = config->spPCADimension;
-
 	imageProc = new sp::ImageProc(config);
 
 	if (imageProc == NULL) {
@@ -73,29 +106,7 @@ int main(int argc, char** argv) {
 	extractMode = spConfigIsExtractionMode(config, &configMsg);
 
 	if (extractMode) {
-		for (i =0; i<spConfigGetNumOfImages(config, &configMsg); i++) {
-			configMsg =  spConfigGetImagePath(imgPath,config,i);
-			if (configMsg != SP_CONFIG_SUCCESS) {
-				spLoggerPrintWarning(IMAGE_PATH_WARNING, __FILE__, __func__, __LINE__);
-				continue;
-			}
-			configMsg =  spConfigCreateFeatsPath(featsPath,config, i);
-			if (configMsg != SP_CONFIG_SUCCESS) {
-				spLoggerPrintWarning(FEATS_PATH_WARNING, __FILE__, __func__, __LINE__);
-				continue;
-				}
-			imgFeatures = imageProc->getImageFeatures(imgPath, i, &featuresPerImage);
-			if (imgFeatures == NULL) {
-				loggerMsg = spLoggerPrintWarning(FEATURES_WARNING,__FILE__, __func__, __LINE__);
-				continue;
-				}
-			if (storeFeatures(imgFeatures, featuresPerImage, featsPath, i, dim)== true) {
-				filesStored++;
-			}
-			if (imgFeatures != NULL) {
-				freePointsArray(imgFeatures, featuresPerImage);
-			}
-		}
+		filesStored = saveFeaturesToFiles(config, imageProc);
 		if (filesStored == 0) {
 			spLoggerPrintError(FEATURES_ERROR,__FILE__, __func__, __LINE__);
 			goto cleanup;
@@ -228,7 +239,7 @@ cleanup:
 	if (queryFeatures != NULL){
 		freePointsArray(queryFeatures, queryNumOfFeats);
 	}
-	if (bpq != NULL){ //TODO check if need to also be freed here
+	if (bpq != NULL){
 		spBPQueueDestroy(bpq);
 		}
 	if (imagesRates != NULL) {
