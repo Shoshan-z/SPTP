@@ -11,7 +11,7 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 	bool isLeftChosen;
 	SP_BPQUEUE_MSG bpqMsg;
 
-	if(curr == NULL){
+	if(curr == NULL || bpq == NULL){
 		return;
 	}
 	/* Add the current point to the BPQ. Note that this is a no-op if the
@@ -23,8 +23,7 @@ void kNearestNeighbors(KDTreeNode curr , SPBPQueue bpq, SPPoint point){
 		spListElementDestroy(element);
 		if (bpqMsg == SP_BPQUEUE_INVALID_ARGUMENT || bpqMsg == SP_BPQUEUE_OUT_OF_MEMORY) {
 			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
-			//TODO verify if we when enqueue fails we should "termintate" - indicate
-			//in main that the search failed. extren searchSucess?
+			bpq = NULL;
 		}
 		return;
 	}

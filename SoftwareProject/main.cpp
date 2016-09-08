@@ -167,6 +167,10 @@ int main(int argc, char** argv) {
 		//counting the number of "hits" per image
 		for (i=0; i<queryNumOfFeats; i++) {
 			kNearestNeighbors(kdTree, bpq,queryFeatures[i]);
+			if (bpq==NULL){
+				spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
+				goto cleanup;
+			}
 			for (j = 0; j<config->spKNN; j++){
 				currElement = spBPQueuePeek(bpq);
 				imagesRates[spListElementGetIndex(currElement)]->rate+=1;
