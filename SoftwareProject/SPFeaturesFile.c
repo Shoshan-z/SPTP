@@ -57,13 +57,14 @@ cleanup:
 }
 
 /**
+ * a private utility function
  * the function read from file the image index, number of features and dimension,
  * and checks that the file is in order
  *
- * @param fp
- * @param imageIndex
- * @param numOfFeatures
- * @param dim
+ * @param fp - the features file pointer
+ * @param imageIndex - the current image index in the loop
+ * @param numOfFeatures - a pointer which will hold the number of features in the file
+ * @param dim - the dimension according to the config file
  *
  * @return:
  * -true if the read was successful and all information was correct
@@ -104,6 +105,19 @@ static bool getMetadataFromFile(FILE* fp, int imageIndex, int* numOfFeatures, in
 	return true;
 }
 
+/**
+ * a private utility function
+ * the function create the next image feature(=point) according to the information
+ * in the file
+ *
+ * @param fp - the features file pointer
+ * @param imageIndex - the current image index in the loop
+ * @param dim - the dimension according to the config file
+ *
+ * @return:
+ * -the new SPPoint
+ * -NULL if an allocation or read from file error occurred
+ */
 static SPPoint createPointFromFile(FILE* fp, int imgIndex, int dim){
 	int j = 0, readBytes = 0;
 	double* coor = NULL;
@@ -127,6 +141,23 @@ static SPPoint createPointFromFile(FILE* fp, int imgIndex, int dim){
 	return newPoint;
 }
 
+
+/**
+ * a private utility function
+ * the function receives the current "allFeatures" array and add to it the features from the
+ * current file being read.
+ *
+ * @param fp - the features file pointer
+ * @param imageIndex - the current image index in the loop
+ * @param dim - the dimension according to the config file
+ * @param allFeatures - the current features array
+ * @param oldNumOfFeatures - the current number of features in "all features"
+ * @param numOfFeaturesFromFile - the number of features in the current file
+ *
+ * @return:
+ * -the new allFeatures array if no error occurred
+ * -in case of error, the old allFeatures array is returned (without the points from the current file)
+ */
 static SPPoint* mergePointsFromFile(FILE* fp, int imgIndex, int dim, SPPoint* allFeatures, int oldNumOfFeatures, int numOfFeaturesFromFile)
 {
 	int i = 0;

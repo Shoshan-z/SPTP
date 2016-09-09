@@ -29,6 +29,14 @@ extern "C" {
 
 //TODO add info printing!!!
 
+/**
+ * the function saves all images features to .feats file
+ *
+ * @param config - the configuration struct
+ * @param imageProc - the image processing object
+ *
+ * @return the numbers of files created when successful, zero otherwise
+ */
 int saveFeaturesToFiles(SPConfig config, sp::ImageProc* imageProc) {
 	SP_CONFIG_MSG configMsg;
 	int i =0;

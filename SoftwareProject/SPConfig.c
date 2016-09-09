@@ -18,6 +18,9 @@ bool isEmpty(char* str) {
 		return true;
 	}
 
+	if (str[0] == '\r') {
+		return true;
+	}
 	return false;
 }
 
@@ -61,7 +64,7 @@ void splitLine(char* line, char* name, char* val) {
 		strcpy(lineCopy, line); //since strcpy changes it's input string
 		tmpName = strtok(lineCopy, "=");
 		strcpy(name, tmpName);
-		tmpVal = strtok(NULL, "\n");
+		tmpVal = strtok(NULL, "\r\n");
 		strcpy(val, tmpVal);
 	}
 }
@@ -81,7 +84,11 @@ char* trimSpaces(char* str) {
 	while (*str == ' ' || *str == '\t') {
 		str++;
 	}
-	//count spcaces in the end of the va
+
+	if (*strEnd == '\r') {
+		strEnd--;
+	}
+	//count spaces in the end of the str
 	while (*strEnd == ' ' || *strEnd == '\t') {
 		strEnd--;
 		}

@@ -232,13 +232,8 @@ int compare (const void * a, const void * b)
 
 void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr){
 	int* LRArray = NULL;
-	int middle =0;
-	int size =0;
-	int rows=0;
-	int i = 0;
-	int j = 0;
-	int l = 0;// running index for left array
-	int r = 0; // running index for right array
+	int middle = 0, size = 0, rows =0;
+	int i = 0, j = 0, l = 0, r = 0;
 	int indexInOrigin = 0;
 	int* map1 = {0};
 	int* map2 = {0};
@@ -250,17 +245,14 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 		spLoggerPrintError(INVALID_ARG_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
-
 	rows= kdArr->dim;
 	size= kdArr->size;
 	middle =(int)(ceil((double)size/2));
-
 	p1 = (SPPoint*)calloc(sizeof(SPPoint),middle);
 	if (p1 == NULL){
 		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
-
 	p2 = (SPPoint*)calloc(sizeof(SPPoint),(size-middle));
 	if (p2 == NULL){
 		spLoggerPrintError(ALLOC_ERROR_MSG, __FILE__, __func__, __LINE__);
@@ -291,9 +283,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 			LRArray[indexInOrigin]=1;
 		}
 	}
-	l=0;
-	r=0;
-
+	l=0, r =0;
 	for(i = 0; i < size; i++){// split to leftArr= p1  and rightArr=p2
 		if (LRArray[i]==0){
 			p1[l]=spPointCopy((kdArr->points)[i]);
@@ -310,11 +300,9 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 				goto cleanup;
 			}
 			r++;
-
 		}
 	}
-	l=0;
-	r=0;
+	l = 0, r = 0;
 	for(i = 0; i < size; i++){
 		if (LRArray[i]==0){
 			map1[i]= l;
@@ -327,9 +315,7 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 			r++;
 		}
 	}
-
-	l=0;
-	r=0;
+	l = 0, r = 0;
 	for(i=0; i<rows; i++){ // the split into leftKDArray and rightKDArray
 		for (j=0; j<size; j++){
 			indexInOrigin=(kdArr->matrix)[i][j];
@@ -342,13 +328,11 @@ void split(SPKDArray kdArr, int coor, SPKDArray leftKDArr, SPKDArray rightKDArr)
 				r++;
 			}
 		}
-		l = 0;
-		r = 0;
+		l = 0, r = 0;
 	}
 	leftKDArr->points = p1;
 	leftKDArr->dim = rows;
 	leftKDArr->size= middle;
-
 	rightKDArr->points = p2;
 	rightKDArr->dim = rows;
 	rightKDArr->size= size-middle;
@@ -362,5 +346,4 @@ cleanup:
 	free(LRArray);
 	free(map1);
 	free(map2);
-
 }
