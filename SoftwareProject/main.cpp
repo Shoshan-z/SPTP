@@ -27,8 +27,6 @@ extern "C" {
 #define QUERY_PATH_ERROR "Could not open query image"
 #define BPQ_ERROR "Could not create BPQueue"
 
-//TODO add info printing!!!
-
 /**
  * the function saves all images features to .feats file
  *
@@ -114,6 +112,7 @@ int main(int argc, char** argv) {
 	extractMode = spConfigIsExtractionMode(config, &configMsg);
 
 	if (extractMode) {
+		spLoggerPrintInfo("Extracting features...");
 		filesStored = saveFeaturesToFiles(config, imageProc);
 		if (filesStored == 0) {
 			spLoggerPrintError(FEATURES_ERROR,__FILE__, __func__, __LINE__);
@@ -133,6 +132,8 @@ int main(int argc, char** argv) {
 		spLoggerPrintError(NO_FEATURES_EXTRACTED_ERROR, __FILE__, __func__, __LINE__);
 		goto cleanup;
 	}
+
+	spLoggerPrintInfo("Creating database");
 	kdArray = init(allFeatures, totalFeatures);
 	if (kdArray == NULL){
 		spLoggerPrintError(KD_ARRAY_ERROR, __FILE__, __func__, __LINE__);
@@ -168,6 +169,8 @@ int main(int argc, char** argv) {
 			spLoggerPrintError(QUERY_PATH_ERROR, __FILE__, __func__, __LINE__);
 			goto cleanup;
 		}
+
+		spLoggerPrintInfo("Searching for similar images");
 		bpq = spBPQueueCreate(config->spKNN);
 		if (bpq == NULL) {
 			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
@@ -214,6 +217,7 @@ int main(int argc, char** argv) {
 			loggerMsg = spLoggerPrintWarning(MINIMAL_GUI_NOT_SET_WARNING,__FILE__, __func__, __LINE__);
 		}
 
+		spLoggerPrintInfo("Displaying results");
 		for (i=0; i<config->spNumOfSimilarImages; i++) {
 			configMsg =  spConfigGetImagePath(imgPath,config,imagesRates[i]->imgIndex);
 			if (configMsg != SP_CONFIG_SUCCESS) {
