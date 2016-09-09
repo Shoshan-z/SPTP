@@ -56,16 +56,112 @@ cleanup:
 	return success;
 }
 
+/**
+ * the function read from file the image index, number of features and dimension,
+ * and checks that the file is in order
+ *
+ * @param fp
+ * @param imageIndex
+ * @param numOfFeatures
+ * @param dim
+ *
+ * @return:
+ * -true if the read was successful and all information was correct
+ * -false otherwise
+ */
+static bool getMetadataFromFile(FILE* fp, int imageIndex, int* numOfFeatures, int* dim){
+	int fileSize = 0, readBytes = 0;
+	int imageIndexFromFile = 0;
+	//check file size
+	fseek(fp, 0, SEEK_END);
+	fileSize = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	//each file should contain at least the imgageIndex, number of features and dimension
+	if ((unsigned int) fileSize <3*sizeof(int)) {
+		return false;
+	}
+
+	readBytes = fread(&imageIndexFromFile, sizeof(int), 1, fp); 	//read the image index
+	if (readBytes != 1) {
+		return false;
+	}
+
+	if (imageIndexFromFile != imageIndex) {
+		return false;
+	}
+
+	readBytes = fread(numOfFeatures, sizeof(int), 1, fp); 	//read number of features
+	if (readBytes != 1) {
+			return false;
+		}
+
+	readBytes = fread(dim, sizeof(int), 1, fp);
+	if (readBytes != 1) {
+		return false;
+	}
+
+	return true;
+}
+
+static SPPoint createPointFromFile(FILE* fp, int imgIndex, int dim){
+	int j = 0, readBytes = 0;
+	double* coor = NULL;
+	SPPoint newPoint = NULL;
+
+	coor = (double*) malloc (sizeof(double)*(dim)); //create the coordinates array for the current point
+	if (coor == NULL) {
+		return NULL;
+	}
+	for(j=0; j<dim; j++) {
+		readBytes = fread(coor+j, sizeof(double), 1, fp);
+		if (readBytes != 1) {
+			free(coor);
+			return NULL;
+		}
+	}
+
+	newPoint = spPointCreate(coor, dim, imgIndex);
+	free(coor);
+
+	return newPoint;
+}
+
+static SPPoint* mergePointsFromFile(FILE* fp, int imgIndex, int dim, SPPoint* allFeatures, int oldNumOfFeatures, int numOfFeaturesFromFile)
+{
+	int i = 0;
+	SPPoint* tmpFeatures = NULL;
+
+	tmpFeatures = (SPPoint*) calloc(sizeof(SPPoint), (oldNumOfFeatures + numOfFeaturesFromFile));	//store a pointer to the new all features array
+		if (tmpFeatures == NULL) {
+			goto error;
+	}
+
+	memcpy(tmpFeatures, allFeatures, oldNumOfFeatures * (sizeof(SPPoint)));
+
+	for (i=oldNumOfFeatures; i<oldNumOfFeatures + numOfFeaturesFromFile; i++){
+		tmpFeatures[i] = createPointFromFile(fp, imgIndex, dim);
+		if (tmpFeatures[i] == NULL) {
+			goto error;
+		}
+	}
+
+	return tmpFeatures;
+error:
+	if (tmpFeatures != NULL) {
+		for (i=oldNumOfFeatures; tmpFeatures[i] != NULL; i++) {
+			spPointDestroy(tmpFeatures[i]);
+		}
+		free(tmpFeatures);
+	}
+
+	return NULL;
+}
 
 SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* featsPath, int imgIndex) {
-	SPPoint tmpPoint = NULL;
-	SPPoint* tmpFeatures = NULL;
 	FILE* fp = NULL;
-	int indexFromFile = 0, dim = 0;
-	double* coor = NULL;
-	int i = 0, j =0;
-	int currNumOfFeatures =0, fileSize = 0;
-	int readBytes = 0; //will hold the bytes which were currently read
+	SPPoint* tmpFeatures = NULL;
+	int dim = 0, currNumOfFeatures = 0;
 	char errorString[1024] = {0};
 	bool success = false;
 
@@ -76,52 +172,14 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	if (fp == NULL){ //couldn't open the file
 		goto cleanup;
 	}
-	//check file size
-	fseek(fp, 0, SEEK_END);
-	fileSize = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
 
-	//each file should contain at least the imgageIndex, number of features and dimension
-	if ((unsigned int) fileSize <3*sizeof(int)) {
+	if (!getMetadataFromFile(fp, imgIndex, &currNumOfFeatures, &dim)) {
 		goto cleanup;
 	}
 
-	readBytes = fread(&indexFromFile, sizeof(int), 1, fp); 	//read the image index
-	if (readBytes != 1) {
+	tmpFeatures = mergePointsFromFile(fp, imgIndex, dim, allFeatures, *numOfFeatures, currNumOfFeatures);
+	if (tmpFeatures == NULL)
 		goto cleanup;
-	}
-	readBytes = fread(&currNumOfFeatures, sizeof(int), 1, fp); 	//read number of features
-	if (readBytes != 1) {
-			goto cleanup;
-		}
-
-	tmpFeatures = (SPPoint*) calloc(sizeof(SPPoint), (*numOfFeatures+currNumOfFeatures));	//store a pointer to the new all features array
-		if (tmpFeatures == NULL) {
-			goto cleanup;
-	}
-	memcpy(tmpFeatures, allFeatures,*numOfFeatures*(sizeof(SPPoint)));
-
-	readBytes = fread(&dim, sizeof(int), 1, fp);
-	if (readBytes != 1) {
-		goto cleanup;
-		}
-	coor = (double*) malloc (sizeof(double)*(dim)); //create the coordinates array for the current point
-	if (coor == NULL) {
-		goto cleanup;
-	}
-	for (i=*numOfFeatures; i<*numOfFeatures+ currNumOfFeatures; i++){
-		for(j=0; j<dim; j++) {
-			readBytes = fread(coor+j, sizeof(double), 1, fp);
-			if (readBytes != 1) {
-				goto cleanup;
-			}
-		}
-		tmpPoint = spPointCreate(coor, dim, imgIndex);
-		if (tmpPoint == NULL) {
-			goto cleanup;
-		}
-		tmpFeatures[i] = tmpPoint;
-	}
 
 	//update the total number of features
 	*numOfFeatures += currNumOfFeatures;
@@ -134,20 +192,10 @@ cleanup:
 		sprintf(errorString, FEATS_FILE_ERROR, imgIndex);
 		spLoggerPrintWarning(errorString,__FILE__, __func__, __LINE__);
 
-		if (tmpFeatures != NULL) {
-			for (i=*numOfFeatures; tmpFeatures[i] != NULL; i++) {
-				spPointDestroy(tmpFeatures[i]);
-			}
-			free(tmpFeatures);
-		}
 		tmpFeatures = allFeatures;
 		}
-	else //if success
-		{
+	else { //if success
 		free(allFeatures);
-		}
-	if (coor != NULL) {
-		free(coor);
 	}
 	if (fp != NULL) {
 		fclose(fp);

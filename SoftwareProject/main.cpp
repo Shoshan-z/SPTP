@@ -223,13 +223,10 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	printf("Exiting…\n");
+	printf("Exiting...\n");
 	success = true;
 
 cleanup:
-	if (config!= NULL) {
-		spConfigDestroy(config);
-	}
 	if (allFeatures != NULL){
 		freePointsArray(allFeatures, totalFeatures);
 	}
@@ -243,7 +240,7 @@ cleanup:
 		spBPQueueDestroy(bpq);
 		}
 	if (imagesRates != NULL) {
-		for (i =0; i<config->spNumOfSimilarImages; i++) {
+		for (i =0; i<config->spNumOfImages; i++) {
 			free(imagesRates[i]);
 		}
 		free(imagesRates);
@@ -255,6 +252,10 @@ cleanup:
 		KDTreeDestroy(kdTree);
 	}
 	spLoggerDestroy();
+
+	if (config!= NULL) {
+		spConfigDestroy(config);
+	}
 	if (!success) {
 		printf("An error occurred, see log file for details\n");
 		return -1;
