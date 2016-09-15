@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "SPLogger.h"
+#define MAX_SIZE 1024
 
 /**
  * A data-structure which is used for configuring the system.
@@ -33,12 +34,12 @@ typedef enum sp_KDTree_Split_Method_t {
 }SPLIT_METHOD;
 
 struct sp_config_t {
-	char spImagesDirectory[1024];
-	char spImagesPrefix[1024];
+	char spImagesDirectory[MAX_SIZE];
+	char spImagesPrefix[MAX_SIZE];
 	char spImagesSuffix[5];
 	int spNumOfImages;
 	int spPCADimension;
-	char spPCAFilename[1024];
+	char spPCAFilename[MAX_SIZE];
 	int spNumOfFeatures;
 	bool spExtractionMode;
 	int spNumOfSimilarImages;
@@ -46,7 +47,7 @@ struct sp_config_t {
 	int spKNN;
 	bool spMinimalGUI;
 	SP_LOGGER_LEVEL spLoggerLevel;
-	char spLoggerFilename[1024];
+	char spLoggerFilename[MAX_SIZE];
 };
 
 typedef struct sp_config_t* SPConfig;

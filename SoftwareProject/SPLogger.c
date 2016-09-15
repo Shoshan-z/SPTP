@@ -121,14 +121,12 @@ SP_LOGGER_MSG spLoggerPrintDebug(const char* msg, const char* file,
 	}
 SP_LOGGER_MSG spLoggerPrintMsg(const char* msg){//is this what they wanted us to do???
 	int wSuccess = 0; // writing using fprintf succeeded
-	//char answer[1024] = {0};
 	if (logger == NULL){
 		return SP_LOGGER_UNDIFINED;
 	}
 	if(msg ==NULL ){
 		return SP_LOGGER_INVAlID_ARGUMENT;
 	}
-	//sprintf(answer, "%s\n", msg);
 	wSuccess= fprintf(logger->outputChannel, "%s\n", msg);
 	if (wSuccess < 0){  // potential hazard, check if this is what they meant on a write fail
 		return SP_LOGGER_WRITE_FAIL;
