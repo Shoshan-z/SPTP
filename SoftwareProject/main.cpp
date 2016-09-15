@@ -13,6 +13,7 @@ extern "C" {
 #include "Utilities.h"
 }
 
+#define MAX_SIZE 1024
 #define OPEN_LOGGER_ERROR "Cannot initialize logger"
 #define CREATE_IMGPROC_ERROR "Could not create the image processing object"
 #define IMAGE_PATH_WARNING "Image path couldn't be resolved"
@@ -26,6 +27,10 @@ extern "C" {
 #define KD_TREE_ERROR "Could not create KDTree"
 #define QUERY_PATH_ERROR "Could not open query image"
 #define BPQ_ERROR "Could not create BPQueue"
+#define DISPLAY_INFO "Displaying results"
+#define CREATE_DB_INFO "Creating database"
+#define QUERY_INFO_MSG "Searching for similar images"
+#define DISPLAY_RES_INFO "Displaying results"
 
 /**
  * the function saves all images features to .feats file
@@ -40,7 +45,7 @@ int saveFeaturesToFiles(SPConfig config, sp::ImageProc* imageProc) {
 	int i =0;
 	int featuresPerImage = 0;
 	int filesStored = 0;
-	char imgPath[1024] = {0}, featsPath[1024] = {0};
+	char imgPath[MAX_SIZE] = {0}, featsPath[MAX_SIZE] = {0};
 	SPPoint* imgFeatures = NULL;
 	int dim = 0;
 
@@ -79,7 +84,7 @@ int main(int argc, char** argv) {
 	SP_LOGGER_MSG loggerMsg;
 	int i = 0, j=0;
 	sp::ImageProc* imageProc = NULL;
-	char imgPath[1024] = {0}, featsPath[1024] = {0}, queryPath[1024] = {0};
+	char imgPath[MAX_SIZE] = {0}, featsPath[MAX_SIZE] = {0}, queryPath[MAX_SIZE] = {0};
 	SPPoint* allFeatures = NULL;
 	int totalFeatures = 0, queryNumOfFeats = 0;
 	SPKDArray kdArray = NULL;
@@ -112,7 +117,7 @@ int main(int argc, char** argv) {
 	extractMode = spConfigIsExtractionMode(config, &configMsg);
 
 	if (extractMode) {
-		spLoggerPrintInfo("Extracting features...");
+		spLoggerPrintInfo(DISPLAY_INFO);
 		filesStored = saveFeaturesToFiles(config, imageProc);
 		if (filesStored == 0) {
 			spLoggerPrintError(FEATURES_ERROR,__FILE__, __func__, __LINE__);
@@ -133,7 +138,7 @@ int main(int argc, char** argv) {
 		goto cleanup;
 	}
 
-	spLoggerPrintInfo("Creating database");
+	spLoggerPrintInfo(CREATE_DB_INFO);
 	kdArray = init(allFeatures, totalFeatures);
 	if (kdArray == NULL){
 		spLoggerPrintError(KD_ARRAY_ERROR, __FILE__, __func__, __LINE__);
@@ -170,7 +175,7 @@ int main(int argc, char** argv) {
 			goto cleanup;
 		}
 
-		spLoggerPrintInfo("Searching for similar images");
+		spLoggerPrintInfo(QUERY_INFO_MSG);
 		bpq = spBPQueueCreate(config->spKNN);
 		if (bpq == NULL) {
 			spLoggerPrintError(BPQ_ERROR, __FILE__, __func__, __LINE__);
@@ -217,7 +222,7 @@ int main(int argc, char** argv) {
 			loggerMsg = spLoggerPrintWarning(MINIMAL_GUI_NOT_SET_WARNING,__FILE__, __func__, __LINE__);
 		}
 
-		spLoggerPrintInfo("Displaying results");
+		spLoggerPrintInfo(DISPLAY_RES_INFO);
 		for (i=0; i<config->spNumOfSimilarImages; i++) {
 			configMsg =  spConfigGetImagePath(imgPath,config,imagesRates[i]->imgIndex);
 			if (configMsg != SP_CONFIG_SUCCESS) {

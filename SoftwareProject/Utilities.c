@@ -6,7 +6,7 @@
 #define USAGE_ERROR "Invalid command line : use -c <config_filename>"
 #define OPEN_DEFAULT_CONFIG_ERRROR "The default configuration file spcbir.config couldn’t be open"
 #define OPEN_CONFIG_EROOR "The configuration file %s couldn’t be open"
-
+#define MAX_SIZE 1024
 
 imageRate imageRateCreate(int imgIndex, int rate){
 
@@ -47,7 +47,7 @@ void freePointsArray(SPPoint* points, int size) {
 
 SPConfig checkArgs(int argc, char** argv){
 	SPConfig config = NULL;
-	char configFName[1024] = "spcbir.config";
+	char configFName[MAX_SIZE] = "spcbir.config";
 	SP_CONFIG_MSG configMsg;
 
 	if (argc == 1) {

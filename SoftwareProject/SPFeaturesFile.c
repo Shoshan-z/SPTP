@@ -6,6 +6,7 @@
 #define ALLOC_ERROR_MSG "Allocation error"
 #define FEATS_FILE_ERROR "Invalid features file for image %d"
 #define WRITE_FAIL "Could not create file for image %d"
+#define MAX_SIZE 1024
 
 bool storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int imgIndex, int dim) {
 	FILE* fp = NULL;
@@ -14,7 +15,7 @@ bool storeFeatures(SPPoint* features, int numOfFeatures, char* featsPath, int im
 	double curr = 0;
 	int writtenElemnts = 0;
 	bool success = false;
-	char errorString[1024] = {0};
+	char errorString[MAX_SIZE] = {0};
 
 	if (features == NULL ||numOfFeatures ==0 ||featsPath == NULL ) { //LOGGER
 		goto cleanup;
@@ -193,7 +194,7 @@ SPPoint* getFeaturesFromFile(SPPoint* allFeatures,int* numOfFeatures, char* feat
 	FILE* fp = NULL;
 	SPPoint* tmpFeatures = NULL;
 	int dim = 0, currNumOfFeatures = 0;
-	char errorString[1024] = {0};
+	char errorString[MAX_SIZE] = {0};
 	bool success = false;
 
 	if (featsPath == NULL){

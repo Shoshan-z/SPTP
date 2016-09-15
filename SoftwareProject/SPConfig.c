@@ -6,6 +6,8 @@
 #include <assert.h>
 #include "SPPoint.h"
 
+#define MAX_SIZE 1024
+
 bool isEmpty(char* str) {
 	if (str == NULL) {
 		return true;
@@ -322,7 +324,7 @@ SPConfig createEmptyConfig(){
 void printError(const char* filename, int line, SP_CONFIG_MSG msg){
 	char* message = NULL;
 	char* param = NULL;
-	char msgBuffer[1024] = {0};
+	char msgBuffer[MAX_SIZE] = {0};
 
 	if (msg == SP_CONFIG_INVALID_LINE) {
 		message = "Invalid configuration line";
@@ -370,9 +372,9 @@ SP_CONFIG_MSG validateConfig(SPConfig config){
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg){
 	FILE* fp = NULL;
-	char line[1024] = {0};
-	char name[1024] = {0};
-	char val[1024] = {0};
+	char line[MAX_SIZE] = {0};
+	char name[MAX_SIZE] = {0};
+	char val[MAX_SIZE] = {0};
 	char* namePtr = NULL;
 	char* valPtr = NULL;
 	SPConfig config = NULL;
