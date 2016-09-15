@@ -7,6 +7,7 @@
 #include "SPPoint.h"
 
 #define MAX_SIZE 1024
+#define STDOUT_STR "stdout"
 
 bool isEmpty(char* str) {
 	if (str == NULL) {
@@ -367,6 +368,11 @@ SP_CONFIG_MSG validateConfig(SPConfig config){
 	if (config->spNumOfImages == -1) {
 		return SP_CONFIG_MISSING_NUM_IMAGES;
 	}
+
+	if (stricmp(config->spLoggerFilename, STDOUT_STR) == 0) {
+		config->spLoggerFilename[0] = '\0';
+	}
+
 	return SP_CONFIG_SUCCESS;
 }
 

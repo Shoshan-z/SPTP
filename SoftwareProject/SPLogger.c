@@ -24,7 +24,7 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 		return SP_LOGGER_OUT_OF_MEMORY;
 	}
 	logger->level = level; //Set the level of the logger
-	if (filename == NULL) { //In case the filename is not set use stdout
+	if (filename == NULL || filename[0] == '\0') { //In case the filename is not set use stdout
 		logger->outputChannel = stdout;
 		logger->isStdOut = true;
 	} else { //Otherwise open the file in write mode

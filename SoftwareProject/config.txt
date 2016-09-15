@@ -13,5 +13,5 @@ spKDTreeSplitMethod = RANDOM
 spKNN = 10
 
 spMinimalGUI = false
-spLoggerFilename = test1.log
+spLoggerFilename = mynewlogger.txt
 spLoggerLevel = 2
